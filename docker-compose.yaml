@@ -1,0 +1,32 @@
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./litellm-config.yaml:/app/config.yaml
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - DISABLE_SPEND_LOGS=True
+      - DISABLE_RESET_BUDGET=True
+      - LITELLM_LOCAL_MODEL_COST_MAP=True
+      - PANW_PRISMA_AIRS_API_KEY=${PANW_PRISMA_AIRS_API_KEY}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    entrypoint: ["litellm"]
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "3000:8080"
+    environment:
+      # Primary: LiteLLM gateway (secured-llama + private-llama)
+      - 'OPENAI_API_BASE_URL=http://litellm:4000/v1'
+      - OPENAI_API_KEY=${LITELLM_MASTER_KEY}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - litellm

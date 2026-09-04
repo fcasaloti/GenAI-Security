@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GenAI App Security Lab</title>
+  <link rel="stylesheet" href="/static/base.css" />
+  <style>
+    .hero { padding: 60px 0 48px; border-bottom: 1px solid var(--border); margin-bottom: 48px; }
+    .hero-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+    .hero-title { font-size: 44px; font-weight: 700; line-height: 1.15; margin-bottom: 14px; }
+    .hero-title span { color: var(--accent); }
+    .hero-sub { color: var(--muted); font-size: 16px; max-width: 600px; margin-bottom: 28px; }
+    .hero-meta { display: flex; gap: 28px; }
+    .hero-stat { font-size: 13px; color: var(--muted); }
+    .hero-stat strong { color: var(--text); display: block; font-size: 22px; }
+
+    .modules-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 60px; }
+    .mod-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px; text-decoration: none; color: var(--text);
+      display: flex; flex-direction: column; gap: 8px;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .mod-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .mod-card-head { display: flex; align-items: center; gap: 10px; }
+    .mod-num { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1px; }
+    .mod-tag {
+      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px;
+      letter-spacing: 0.5px; margin-left: auto;
+    }
+    .mod-tag.foundations { background: rgba(88,166,255,0.12); color: var(--accent); }
+    .mod-tag.attacks     { background: rgba(248,81,73,0.12);  color: var(--red); }
+    .mod-tag.defenses    { background: rgba(63,185,80,0.12);  color: var(--green); }
+    .mod-tag.advanced    { background: rgba(188,140,255,0.12); color: var(--purple); }
+    .mod-title { font-weight: 600; font-size: 16px; }
+    .mod-desc  { color: var(--muted); font-size: 13px; line-height: 1.4; }
+    .mod-scripts { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: monospace; }
+
+    .new-badge { font-size: 10px; background: rgba(240,136,62,0.15); color: var(--orange); border: 1px solid rgba(240,136,62,0.3); border-radius: 8px; padding: 1px 6px; font-weight: 700; margin-left: 6px; }
+  </style>
+</head>
+<body>
+<nav>
+  <span class="nav-logo">GenAI App Security Lab</span>
+</nav>
+
+<div class="page">
+  <div class="hero">
+    <div class="hero-eyebrow">GenAI App Security</div>
+    <h1 class="hero-title">GenAI Security<br/><span>Attack &amp; Defense Workshop</span></h1>
+    <p class="hero-sub">
+      A hands-on lab environment built to learn and demonstrate GenAI security concepts.
+      Each module covers one attack surface, shows a live exploit, and demonstrates how to defend against it.
+    </p>
+    <div class="hero-meta">
+      <div class="hero-stat"><strong>10</strong> modules</div>
+      <div class="hero-stat"><strong>100%</strong> local — no cloud</div>
+      <div class="hero-stat"><strong>M2</strong> Apple Silicon optimized</div>
+    </div>
+  </div>
+
+  <div class="section-label">All Modules</div>
+  <div class="modules-grid">
+
+    <a class="mod-card" href="/module/01">
+      <div class="mod-card-head">
+        <span class="mod-num">01</span>
+        <span class="mod-tag foundations">Foundations</span>
+      </div>
+      <div class="mod-title">Tokenization</div>
+      <div class="mod-desc">How LLMs split text into fragments. The root cause of token smuggling and filter bypass attacks.</div>
+      <div class="mod-scripts">01_llm_basics/01_tokenization.py</div>
+    </a>
+
+    <a class="mod-card" href="/module/02">
+      <div class="mod-card-head">
+        <span class="mod-num">02</span>
+        <span class="mod-tag foundations">Foundations</span>
+      </div>
+      <div class="mod-title">Embeddings &amp; Similarity</div>
+      <div class="mod-desc">Converting text into coordinates in meaning-space. The basis of RAG, semantic search, and data poisoning.</div>
+      <div class="mod-scripts">02_embeddings/01_similarity.py</div>
+    </a>
+
+    <a class="mod-card" href="/module/03">
+      <div class="mod-card-head">
+        <span class="mod-num">03</span>
+        <span class="mod-tag attacks">Attacks</span>
+      </div>
+      <div class="mod-title">Vector Database &amp; Data Poisoning</div>
+      <div class="mod-desc">ChromaDB internals and how an attacker injects documents to manipulate retrieval results.</div>
+      <div class="mod-scripts">03_vector_db/01_chromadb_basics.py</div>
+    </a>
+
+    <a class="mod-card" href="/module/04">
+      <div class="mod-card-head">
+        <span class="mod-num">04</span>
+        <span class="mod-tag attacks">Attacks</span>
+      </div>
+      <div class="mod-title">RAG Pipeline</div>
+      <div class="mod-desc">Full Retrieval-Augmented Generation pipeline with live data poisoning attack demonstration.</div>
+      <div class="mod-scripts">04_rag_basic/01_rag_basic.py</div>
+    </a>
+
+    <a class="mod-card" href="/module/05">
+      <div class="mod-card-head">
+        <span class="mod-num">05</span>
+        <span class="mod-tag attacks">Attacks + Defense</span>
+      </div>
+      <div class="mod-title">Agents &amp; Indirect Prompt Injection</div>
+      <div class="mod-desc">LLM tool-use loop, indirect injection through documents, and code-level defenses.</div>
+      <div class="mod-scripts">05_agents/01_agent_basics.py · 02_agent_defended.py</div>
+    </a>
+
+    <a class="mod-card" href="/module/06">
+      <div class="mod-card-head">
+        <span class="mod-num">06</span>
+        <span class="mod-tag attacks">Attacks</span>
+      </div>
+      <div class="mod-title">Jailbreaks</div>
+      <div class="mod-desc">7 jailbreak techniques tested live — fictional framing, token smuggling, multi-turn escalation.</div>
+      <div class="mod-scripts">06_jailbreaks/01_jailbreak_lab.py</div>
+    </a>
+
+    <a class="mod-card" href="/module/07">
+      <div class="mod-card-head">
+        <span class="mod-num">07</span>
+        <span class="mod-tag defenses">Defenses</span>
+      </div>
+      <div class="mod-title">Guardrails</div>
+      <div class="mod-desc">Multi-layer defense pipeline: regex, PII detection, LLM-as-judge intent classifier, output scanning.</div>
+      <div class="mod-scripts">07_guardrails/01_guardrails.py</div>
+    </a>
+
+    <a class="mod-card" href="/module/08">
+      <div class="mod-card-head">
+        <span class="mod-num">08</span>
+        <span class="mod-tag advanced">Advanced</span>
+      </div>
+      <div class="mod-title">Fine-tuning &amp; Training Poisoning</div>
+      <div class="mod-desc">LoRA fine-tuning on GPT-2 with 33% poisoned training data — watch evil.com appear in responses.</div>
+      <div class="mod-scripts">08_fine-tuning/01_finetune_demo.py</div>
+    </a>
+
+    <a class="mod-card" href="/module/09">
+      <div class="mod-card-head">
+        <span class="mod-num">09</span>
+        <span class="mod-tag advanced">Advanced</span>
+        <span class="new-badge">NEW</span>
+      </div>
+      <div class="mod-title">MCP Server Security</div>
+      <div class="mod-desc">Model Context Protocol architecture, tool poisoning attacks, and defense through tool scoping.</div>
+      <div class="mod-scripts">09_mcp_security/01_mcp_demo.py</div>
+    </a>
+
+    <a class="mod-card" href="/module/10">
+      <div class="mod-card-head">
+        <span class="mod-num">10</span>
+        <span class="mod-tag defenses">Enterprise Defense</span>
+        <span class="new-badge">NEW</span>
+      </div>
+      <div class="mod-title">AI Gateway — LiteLLM &amp; Runtime Security (API)</div>
+      <div class="mod-desc">Enterprise AI gateway topology, model routing, guardrails-as-infrastructure with Runtime Security (API).</div>
+      <div class="mod-scripts">10_ai_gateway/01_gateway_demo.py</div>
+    </a>
+
+    <a class="mod-card" href="/module/rw">
+      <div class="mod-card-head">
+        <span class="mod-num">↗</span>
+        <span class="mod-tag advanced">Real World</span>
+      </div>
+      <div class="mod-title">Your Copilot Has the Same Attack Surface</div>
+      <div class="mod-desc">Maps every lab attack to Microsoft 365 Copilot — where it lands, what the attacker does, and the business impact.</div>
+    </a>
+
+  </div>
+</div>
+  <footer style="text-align:center;padding:24px 0 16px;font-size:12px;color:#484f58;border-top:1px solid #21262d;margin-top:40px;">Developed by Fernando Casaloti</footer>
+</body>
+</html>

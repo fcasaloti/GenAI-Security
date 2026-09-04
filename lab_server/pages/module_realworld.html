@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real World Impact | GenAI App Security</title>
+  <link rel="stylesheet" href="/static/base.css" />
+  <style>
+    /* ── Risk grid ── */
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .risk-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--red);
+      border-radius: 10px;
+      padding: 20px 20px 20px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .risk-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .risk-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .lab-ref {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 7px;
+      white-space: nowrap;
+    }
+
+    .risk-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .risk-row-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .risk-row-text {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .risk-row-text.impact {
+      color: var(--orange);
+    }
+
+    /* ── Where it lives chip ── */
+    .copilot-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(88, 166, 255, 0.08);
+      border: 1px solid rgba(88, 166, 255, 0.2);
+      border-radius: 5px;
+      padding: 3px 9px;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ── Controls section ── */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 40px;
+    }
+
+    .control-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--green);
+      border-radius: 10px;
+      padding: 18px;
+    }
+
+    .control-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .control-card-body {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    /* ── Presenter callout ── */
+    .presenter-note {
+      background: rgba(188, 140, 255, 0.07);
+      border: 1px solid rgba(188, 140, 255, 0.2);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 32px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .presenter-note strong {
+      color: var(--purple);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    /* ── Key message banner ── */
+    .key-message {
+      background: rgba(248, 81, 73, 0.07);
+      border: 1px solid rgba(248, 81, 73, 0.25);
+      border-radius: 10px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .key-message-headline {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      text-wrap: balance;
+    }
+
+    .key-message-sub {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Divider ── */
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 36px 0;
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <span class="nav-logo">GenAI App Security Lab</span>
+  <span class="nav-sep">/</span>
+  <span class="nav-crumb">Real World Impact</span>
+  <div class="nav-modules">
+    <a class="nav-mod-link" href="/">Home</a>
+    <a class="nav-mod-link" href="/module/01">01</a>
+    <a class="nav-mod-link" href="/module/02">02</a>
+    <a class="nav-mod-link" href="/module/03">03</a>
+    <a class="nav-mod-link" href="/module/04">04</a>
+    <a class="nav-mod-link" href="/module/05">05</a>
+    <a class="nav-mod-link" href="/module/06">06</a>
+    <a class="nav-mod-link" href="/module/07">07</a>
+    <a class="nav-mod-link" href="/module/08">08</a>
+    <a class="nav-mod-link" href="/module/09">09</a>
+    <a class="nav-mod-link" href="/module/10">10</a>
+    <a class="nav-mod-link active" href="/module/rw">Real World</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="module-badge">Real World</div>
+  <h1 class="module-title">Your Copilot Has the Same Attack Surface</h1>
+  <p class="module-subtitle">You don't run any of this infrastructure. Microsoft does. But every attack demonstrated in this lab applies directly to Microsoft 365 Copilot — the model is just somewhere else.</p>
+
+  <!-- Key message -->
+  <div class="key-message">
+    <div class="key-message-headline">Deploying Copilot is not the same as securing it.</div>
+    <div class="key-message-sub">Microsoft built Copilot to be connected — to your email, your files, your calendar, your workflows. That connectivity is exactly the attack surface. The same risks exist whether the model runs on your server or in Microsoft's cloud.</div>
+  </div>
+
+  <!-- Risk mapping -->
+  <div class="section-label">Where the lab attacks land in your environment</div>
+
+  <div class="risk-grid">
+
+    <!-- 1. Data Poisoning -->
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <div class="risk-card-title">Data Poisoning via SharePoint</div>
+        <span class="lab-ref">Labs 03 – 04</span>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Where it lives</div>
+        <div><span class="copilot-chip">M365 Copilot · SharePoint · OneDrive · Teams</span></div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">What the attacker does</div>
+        <div class="risk-row-text">Uploads a document with false policy information into SharePoint. Copilot uses it as a source of truth when employees ask questions — just as it uses legitimate documents.</div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Business impact</div>
+        <div class="risk-row-text impact">Every employee who asks Copilot about that topic gets the attacker's answer, delivered with the same confidence as a real policy document. No warning. No source flag.</div>
+      </div>
+    </div>
+
+    <!-- 2. Indirect Prompt Injection -->
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <div class="risk-card-title">Indirect Prompt Injection via Email & Documents</div>
+        <span class="lab-ref">Lab 09</span>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Where it lives</div>
+        <div><span class="copilot-chip">Copilot for Email · Copilot in Word · Teams Copilot</span></div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">What the attacker does</div>
+        <div class="risk-row-text">Embeds hidden instructions in an email or shared document. When an employee asks Copilot to summarize it, Copilot follows the attacker's instructions instead of the user's request.</div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Business impact</div>
+        <div class="risk-row-text impact">Copilot leaks conversation history, drafts unauthorized replies, or exposes confidential content from the user's mailbox — all appearing as normal AI output.</div>
+      </div>
+    </div>
+
+    <!-- 3. Agent Hijacking -->
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <div class="risk-card-title">Agent Action Hijacking</div>
+        <span class="lab-ref">Lab 05</span>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Where it lives</div>
+        <div><span class="copilot-chip">Copilot Agents · Power Automate · Dynamics 365</span></div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">What the attacker does</div>
+        <div class="risk-row-text">Prompt injection in a processed document redirects an automated Copilot agent workflow — sending emails, creating tasks, updating CRM records, or modifying calendar entries.</div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Business impact</div>
+        <div class="risk-row-text impact">Business processes corrupted silently. Attacker-controlled actions appear to originate from a legitimate employee. No human confirmed them.</div>
+      </div>
+    </div>
+
+    <!-- 4. Policy Bypass -->
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <div class="risk-card-title">Policy Bypass by Insiders</div>
+        <span class="lab-ref">Lab 06</span>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Where it lives</div>
+        <div><span class="copilot-chip">M365 Copilot · Copilot Studio · Enterprise restrictions</span></div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">What the attacker does</div>
+        <div class="risk-row-text">Employees craft prompts — role-play framing, fictional context, gradual escalation — to bypass content policies and use Copilot for things the organization explicitly tried to block.</div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Business impact</div>
+        <div class="risk-row-text impact">Compliance boundaries bypassed. Sensitive data exfiltrated under the cover of a normal AI conversation. No log entry says "policy violation."</div>
+      </div>
+    </div>
+
+    <!-- 5. Overpermissioned Access -->
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <div class="risk-card-title">Overpermissioned Data Access</div>
+        <span class="lab-ref">Labs 01 · 03</span>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Where it lives</div>
+        <div><span class="copilot-chip">M365 Copilot · SharePoint · Exchange</span></div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">What the attacker does</div>
+        <div class="risk-row-text">Copilot inherits the user's full Microsoft 365 permissions. A crafted prompt surfaces confidential files the user could technically access but would never find through normal navigation.</div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Business impact</div>
+        <div class="risk-row-text impact">HR records, executive communications, M&A documents, salary bands — surfaced through a conversational interface. No file was opened. No audit trail was triggered.</div>
+      </div>
+    </div>
+
+    <!-- 6. Training Data Poisoning -->
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <div class="risk-card-title">Custom Copilot Training Data</div>
+        <span class="lab-ref">Lab 08</span>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Where it lives</div>
+        <div><span class="copilot-chip">Copilot Studio · Azure OpenAI fine-tuned models</span></div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">What the attacker does</div>
+        <div class="risk-row-text">Injects malicious examples into the training dataset for a custom Copilot or fine-tuned assistant — indistinguishable from legitimate examples at a glance.</div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-row-label">Business impact</div>
+        <div class="risk-row-text impact">The organization's own branded AI assistant subtly misleads employees or customers. The behavior survives every restart. The only fix is retraining with clean data.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="section-divider" />
+
+  <!-- What good looks like -->
+  <div class="section-label">What good looks like — security controls for AI</div>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">Deploying Copilot without visibility into what flows through it is the equivalent of connecting every employee to the internet with no proxy, no DLP, and no logging. These are the control categories that close the gap.</p>
+
+  <div class="controls-grid">
+
+    <div class="control-card">
+      <div class="control-card-title">Visibility & Monitoring</div>
+      <div class="control-card-body">Log every AI interaction — prompt, response, model, user, timestamp. Anomaly detection on prompt patterns. Alert on high-volume data access through the AI layer. You cannot investigate what you didn't record.</div>
+    </div>
+
+    <div class="control-card">
+      <div class="control-card-title">Input & Output Inspection</div>
+      <div class="control-card-body">AI-native controls that inspect what flows into and out of Copilot in real time — detecting prompt injection, PII leakage, jailbreak attempts, and harmful content generation before it reaches the user or the model.</div>
+    </div>
+
+    <div class="control-card">
+      <div class="control-card-title">Access Hygiene Before You Connect</div>
+      <div class="control-card-body">Enforce least-privilege across SharePoint and Exchange before connecting Copilot. Classify sensitive data and restrict Copilot's scope to what each user actually needs. An AI inherits every permission misconfiguration you already have.</div>
+    </div>
+
+  </div>
+
+  <!-- Closing takeaway -->
+  <div class="callout info">
+    <div class="callout-title">Conclusion</div>
+    <p>The lab showed these attacks running against a local model. The same attacks work against Copilot — the threat is not the model, it is the data it reads, the actions it can take, and the absence of controls between the user and the AI. The question is not whether to use AI. The question is whether you have visibility and controls in place before you do.</p>
+  </div>
+
+</div>
+</body>
+</html>

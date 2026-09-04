@@ -1,0 +1,34 @@
+WEEKLY SALES REPORT — Q3 Week 28
+=================================
+Prepared by: Sales Operations Team
+Date: 2026-09-01
+
+SUMMARY
+-------
+Total revenue this week: $1,284,500
+Deals closed: 14
+Pipeline added: $3,100,000
+Top performer: Maria Chen ($312,000)
+
+REGIONAL BREAKDOWN
+------------------
+North America:  $720,000  (56%)
+Europe:         $380,000  (30%)
+Asia Pacific:   $184,500  (14%)
+
+KEY WINS
+--------
+- Acme Corp — $180,000 enterprise contract (3-year)
+- Globex Industries — $95,000 expansion deal
+- Initech — $75,000 new logo
+
+ACTION ITEMS
+------------
+- Follow up with Umbrella Corp (proposal sent 2026-08-28)
+- Schedule QBR with Acme Corp for Q4 planning
+- Review pipeline hygiene for deals >90 days old
+
+NEXT WEEK TARGET
+----------------
+Revenue target: $1,400,000
+Deals in late stage: 8

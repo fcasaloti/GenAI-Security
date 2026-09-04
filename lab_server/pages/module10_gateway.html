@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 10 — AI Gateway | GenAI App Security</title>
+  <link rel="stylesheet" href="/static/base.css" />
+  <style>
+    .flow-line { stroke-dasharray:6 4; animation:dash 1s linear infinite; }
+    @keyframes dash { to { stroke-dashoffset:-20; } }
+    @keyframes warn-pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+    .warn-pulse { animation: warn-pulse 2.5s ease-in-out infinite; }
+    @keyframes secure-glow { 0%,100%{opacity:0.5} 50%{opacity:1} }
+    .secure-glow { animation: secure-glow 2s ease-in-out infinite; }
+    .section-divider { border:none; border-top:1px solid #21262d; margin:36px 0; }
+  </style>
+</head>
+<body>
+<nav>
+  <span class="nav-logo">GenAI App Security Lab</span>
+  <span class="nav-sep">/</span>
+  <span class="nav-crumb">Module 10 — AI Gateway</span>
+  <div class="nav-modules">
+    <a class="nav-mod-link" href="/">Home</a>
+    <a class="nav-mod-link" href="/module/01">01</a>
+    <a class="nav-mod-link" href="/module/02">02</a>
+    <a class="nav-mod-link" href="/module/03">03</a>
+    <a class="nav-mod-link" href="/module/04">04</a>
+    <a class="nav-mod-link" href="/module/05">05</a>
+    <a class="nav-mod-link" href="/module/06">06</a>
+    <a class="nav-mod-link" href="/module/07">07</a>
+    <a class="nav-mod-link" href="/module/08">08</a>
+    <a class="nav-mod-link" href="/module/09">09</a>
+    <a class="nav-mod-link active" href="/module/10">10</a>
+    <a class="nav-mod-link" href="/module/rw">Real World</a>
+  </div>
+</nav>
+<div class="page">
+  <div class="module-badge">Module 10</div>
+  <h1 class="module-title">AI Gateway</h1>
+  <p class="module-subtitle">Getting a model to work is the easy part. Running it reliably in production — across teams, environments, and multiple providers — is where the real complexity begins. As AI adoption matures, organizations need a centralized layer to manage traffic, control costs, enforce policy, and maintain visibility. That layer is the AI gateway.</p>
+
+  <!-- ── DIAGRAM 1: What is an AI Gateway ── -->
+  <div class="section-label">What is an Enterprise AI Gateway?</div>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:8px;">An enterprise AI gateway is a routing and control layer that sits between your internal applications and external LLM providers. All model traffic passes through it — giving you one place to handle authentication, enforce rate limits, track costs, route to the right provider, and log every interaction for compliance.</p>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">It serves a similar role to an API gateway, but AI workloads introduce constraints that traditional gateways weren't designed for: token-based billing, non-deterministic outputs, provider-specific APIs, and the need to scan content in both directions.</p>
+
+  <div class="topology">
+    <svg viewBox="0 0 820 230" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif" font-size="11">
+
+      <!-- ── LEFT COLUMN: Enterprise Application Layer ── -->
+      <text x="90" y="18" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing="0.5">ENTERPRISE APPLICATION LAYER</text>
+
+      <!-- App boxes -->
+      <rect x="10" y="32"  width="160" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+      <text x="90" y="50"  text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">App 1</text>
+      <text x="90" y="65"  text-anchor="middle" fill="#6e8aab" font-size="10">(Customer Portal)</text>
+
+      <rect x="10" y="84"  width="160" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+      <text x="90" y="102" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">App 2</text>
+      <text x="90" y="117" text-anchor="middle" fill="#6e8aab" font-size="10">(Internal Tooling)</text>
+
+      <rect x="10" y="136" width="160" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+      <text x="90" y="154" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">App 3</text>
+      <text x="90" y="169" text-anchor="middle" fill="#6e8aab" font-size="10">(AI Copilot)</text>
+
+      <!-- ── ARROWS: apps → gateway ── -->
+      <!-- curved paths converging to gateway left edge (x=230, y=115) -->
+      <path d="M172,52 C200,52 215,115 230,115"  fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+      <path d="M172,104 C205,104 218,115 230,115" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+      <path d="M172,156 C200,156 215,115 230,115" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+
+      <!-- ── CENTER: Enterprise AI Gateway ── -->
+      <text x="380" y="18" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing="0.5">ENTERPRISE AI GATEWAY</text>
+      <rect x="232" y="28" width="296" height="180" rx="10" fill="#0f1e14" stroke="#3fb950" stroke-width="2"/>
+
+      <!-- Feature rows -->
+      <rect x="248" y="44"  width="264" height="34" rx="6" fill="#162316" stroke="#2ea043" stroke-width="1"/>
+      <text x="275" y="65"  fill="#3fb950" font-size="16">🔒</text>
+      <text x="300" y="66"  fill="#cdd9e5" font-size="12" font-weight="500">Authentication &amp; Security</text>
+
+      <rect x="248" y="84"  width="264" height="34" rx="6" fill="#162316" stroke="#2ea043" stroke-width="1"/>
+      <text x="275" y="105" fill="#3fb950" font-size="16">💰</text>
+      <text x="300" y="106" fill="#cdd9e5" font-size="12" font-weight="500">Budget &amp; Rate Controls</text>
+
+      <rect x="248" y="124" width="264" height="34" rx="6" fill="#162316" stroke="#2ea043" stroke-width="1"/>
+      <text x="275" y="145" fill="#3fb950" font-size="16">⇄</text>
+      <text x="300" y="146" fill="#cdd9e5" font-size="12" font-weight="500">Intelligent Routing &amp; Failover</text>
+
+      <rect x="248" y="164" width="264" height="34" rx="6" fill="#162316" stroke="#2ea043" stroke-width="1"/>
+      <text x="275" y="185" fill="#3fb950" font-size="16">🔍</text>
+      <text x="300" y="186" fill="#cdd9e5" font-size="12" font-weight="500">Observability &amp; Logging</text>
+
+      <!-- ── ARROWS: gateway → providers ── -->
+      <path d="M530,75  C560,75  575,55  590,55"  fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+      <path d="M530,105 C558,105 572,100 590,100" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+      <path d="M530,145 C558,145 572,148 590,148" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+      <path d="M530,175 C560,175 575,195 590,195" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+
+      <!-- ── RIGHT COLUMN: External LLM Provider Layer ── -->
+      <text x="700" y="18" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing="0.5">EXTERNAL LLM PROVIDER LAYER</text>
+
+      <rect x="592" y="35"  width="218" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+      <text x="701" y="53"  text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">LLM Provider A</text>
+      <text x="701" y="68"  text-anchor="middle" fill="#6e8aab" font-size="10">(e.g., OpenAI)</text>
+
+      <rect x="592" y="82"  width="218" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+      <text x="701" y="100" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">LLM Provider B</text>
+      <text x="701" y="115" text-anchor="middle" fill="#6e8aab" font-size="10">(e.g., Anthropic)</text>
+
+      <rect x="592" y="129" width="218" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+      <text x="701" y="147" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">LLM Provider C</text>
+      <text x="701" y="162" text-anchor="middle" fill="#6e8aab" font-size="10">(e.g., Gemini)</text>
+
+      <rect x="592" y="176" width="218" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+      <text x="701" y="194" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">LLM Provider D</text>
+      <text x="701" y="209" text-anchor="middle" fill="#6e8aab" font-size="10">(e.g., Mistral)</text>
+
+      <!-- Arrow markers -->
+      <defs>
+        <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#3a7bd5"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- ── Why enterprises need a gateway ── -->
+  <div class="section-label">Why Do Enterprises Need an AI Gateway?</div>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">Production AI systems tend to fail at the infrastructure layer, not the model layer. Here are the five drivers that consistently push teams toward a dedicated gateway:</p>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">Resilience Across Providers</div>
+      <div class="card-body">A single provider dependency means a single point of failure. When a provider has an outage or degrades, traffic should automatically shift to an available alternative. Without a gateway, that logic gets duplicated — or skipped — in every application.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💰</div>
+      <div class="card-title">Spending Visibility and Control</div>
+      <div class="card-body">Token costs accumulate fast and are invisible until the invoice arrives. A gateway makes spend visible per application, per team, per model — and lets you enforce hard limits before a runaway job drains the budget.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Audit Trail for Compliance</div>
+      <div class="card-body">Security and legal teams increasingly require a full record of what was sent to which model and when. A gateway is the natural place to log every request and response in a consistent, queryable format — without modifying any application code.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📈</div>
+      <div class="card-title">Scalability Without Bottlenecks</div>
+      <div class="card-body">Semantic caching, load balancing, and intelligent routing to lower-latency providers keep response times consistent as request volume grows. These optimizations are hard to implement correctly at the application level — they belong in shared infrastructure.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Control Over Agentic Workflows</div>
+      <div class="card-body">Autonomous agents make multiple model calls, invoke tools, and can run for minutes at a time. A gateway gives you the visibility and enforcement points to understand what agents are doing, cap their spend, and intervene when behavior drifts outside policy.</div>
+    </div>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- ── What they should do ── -->
+  <div class="section-label">What an AI Gateway Security Platform Should Provide</div>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">An AI gateway that is also a security platform goes beyond routing traffic. It becomes the enforcement point for every AI interaction in the organization — giving security teams the controls and visibility they need without requiring changes to any application. These are the capabilities a mature platform should deliver.</p>
+
+  <div class="cards">
+    <div class="card"><div class="card-icon">📊</div><div class="card-title">Token Usage Visibility</div><div class="card-body">See exactly how many tokens each application, team, or user is consuming — across every AI model in use. Without this, AI spend is invisible until the bill arrives. With it, you can catch runaway apps before they become a budget problem.</div></div>
+    <div class="card"><div class="card-icon">💸</div><div class="card-title">Routing to Cheaper Models</div><div class="card-body">Not every request needs the most capable model. A gateway can route simple queries to a cheaper or faster model automatically — sending only complex tasks to expensive ones. This alone can cut AI spend significantly without touching application code.</div></div>
+    <div class="card"><div class="card-icon">🚦</div><div class="card-title">Rate Limiting Per Application</div><div class="card-body">A single misbehaving app can exhaust provider quotas for the whole organization. Per-application rate limits prevent one team from burning everyone's budget or triggering provider throttling during peak load.</div></div>
+    <div class="card"><div class="card-icon">⚡</div><div class="card-title">Response Caching</div><div class="card-body">Identical or semantically similar questions from different users return the same answer. Returning a cached response costs nothing and takes milliseconds. For repetitive workloads — support bots, FAQ systems — this dramatically reduces LLM call volume.</div></div>
+    <div class="card"><div class="card-icon">🔑</div><div class="card-title">Virtual Keys Per App</div><div class="card-body">Each application gets its own scoped credential instead of sharing a single gateway key. When one application is compromised, its key is revoked. Other applications keep running. This is basic blast radius control that most teams skip entirely.</div></div>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- ── How Companies Fail on Security ── -->
+  <div class="section-label">How Companies Fail to Implement Security</div>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">Some teams do enable basic security controls on their gateway — IP allowlists, simple keyword filters, loose rate limits. But these are rarely tuned for AI-specific threats and are not enough. The five gaps below remain open in most production deployments.</p>
+  <div class="cards">
+    <div class="card" style="border-color:#f85149"><div class="card-icon">💉</div><div class="card-title">Ignoring Prompt Injection</div><div class="card-body">No filtering on hidden malicious instructions that trick the AI into doing unauthorized tasks. The gateway forwards the request faithfully — payload and all.</div></div>
+    <div class="card" style="border-color:#f85149"><div class="card-icon">🔓</div><div class="card-title">Data Leaks (PII)</div><div class="card-body">No stripping of personal data, passwords, or secrets before text is sent to the model. Credit cards, SSNs, and API keys reach external providers unredacted and land in their logs.</div></div>
+    <div class="card" style="border-color:#f85149"><div class="card-icon">🪪</div><div class="card-title">Weak Access Control</div><div class="card-body">Apps share a single gateway credential with no scoping. One compromised application exposes every model and route in the gateway to the attacker.</div></div>
+    <div class="card" style="border-color:#f85149"><div class="card-icon">🎁</div><div class="card-title">No Output Validation</div><div class="card-body">The model's response is trusted completely. Secrets, toxic content, or harmful code generated by the model pass directly to the application and the user.</div></div>
+    <div class="card" style="border-color:#f85149"><div class="card-icon">⚙️</div><div class="card-title">Blind Trust in Defaults</div><div class="card-body">Teams assume the gateway blocks threats out of the box. Default settings optimize for availability — not security. Guardrails must be explicitly configured per route.</div></div>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- ── DIAGRAM 2: Secured gateway ── -->
+  <div class="section-label">Adding the Security Layer</div>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">A security layer integrates with the gateway as a plugin — scanning every request before it reaches the model and every response before it reaches the application. No code change required in any application.</p>
+
+  <div class="topology">
+    <svg viewBox="0 0 900 310" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace" font-size="10">
+
+      <!-- APPS -->
+      <text x="55" y="16" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="bold">APPLICATIONS</text>
+      <rect x="6"  y="26" width="98" height="24" rx="4" fill="#1c2128" stroke="#30363d"/>
+      <text x="55" y="42" text-anchor="middle" fill="#cdd9e5">Customer App</text>
+      <rect x="6"  y="56" width="98" height="24" rx="4" fill="#1c2128" stroke="#30363d"/>
+      <text x="55" y="72" text-anchor="middle" fill="#cdd9e5">Internal Tool</text>
+      <rect x="6"  y="86" width="98" height="24" rx="4" fill="#1c2128" stroke="#30363d"/>
+      <text x="55" y="102" text-anchor="middle" fill="#cdd9e5">AI Agent</text>
+
+      <!-- flow → gateway -->
+      <line x1="106" y1="38"  x2="180" y2="82"  stroke="#30363d" stroke-width="1.5" class="flow-line"/>
+      <line x1="106" y1="68"  x2="180" y2="92"  stroke="#30363d" stroke-width="1.5" class="flow-line"/>
+      <line x1="106" y1="98"  x2="180" y2="102" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
+
+      <!-- GATEWAY box -->
+      <rect x="182" y="42" width="186" height="120" rx="8" fill="#0d1117" stroke="#58a6ff" stroke-width="1.5"/>
+      <text x="275" y="62" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="bold">AI GATEWAY</text>
+      <rect x="196" y="70"  width="158" height="18" rx="3" fill="#161b22" stroke="#30363d"/>
+      <text x="275" y="83"  text-anchor="middle" fill="#8b949e">Routing + Model Selection</text>
+      <rect x="196" y="93"  width="158" height="18" rx="3" fill="#161b22" stroke="#30363d"/>
+      <text x="275" y="106" text-anchor="middle" fill="#8b949e">Rate Limiting + Caching</text>
+      <rect x="196" y="116" width="158" height="18" rx="3" fill="#161b22" stroke="#30363d"/>
+      <text x="275" y="129" text-anchor="middle" fill="#8b949e">Virtual Keys + Cost Tracking</text>
+      <rect x="196" y="139" width="158" height="18" rx="3" fill="#161b22" stroke="#30363d"/>
+      <text x="275" y="152" text-anchor="middle" fill="#8b949e">Traces + Fallback Routing</text>
+
+      <!-- flow gateway → security -->
+      <line x1="370" y1="102" x2="400" y2="102" stroke="#58a6ff" stroke-width="2" class="flow-line"/>
+      <polygon points="400,97 410,102 400,107" fill="#58a6ff"/>
+
+      <!-- SECURITY LAYER -->
+      <rect x="412" y="26" width="208" height="182" rx="8" fill="#0d1117" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="516" y="48" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">SECURITY LAYER</text>
+
+      <text x="424" y="66" fill="#8b949e" font-size="9" font-weight="bold">PRE-CALL — before LLM is called</text>
+      <rect x="422" y="72"  width="188" height="18" rx="3" fill="#161b22" stroke="#f85149"/>
+      <text x="516" y="85"  text-anchor="middle" fill="#f85149">Prompt injection detection</text>
+      <rect x="422" y="95"  width="188" height="18" rx="3" fill="#161b22" stroke="#f85149"/>
+      <text x="516" y="108" text-anchor="middle" fill="#f85149">PII identification &amp; redaction</text>
+      <rect x="422" y="118" width="188" height="18" rx="3" fill="#161b22" stroke="#f85149"/>
+      <text x="516" y="131" text-anchor="middle" fill="#f85149">Jailbreak / policy check</text>
+
+      <text x="424" y="152" fill="#8b949e" font-size="9" font-weight="bold">POST-CALL — before response returns</text>
+      <rect x="422" y="158" width="188" height="18" rx="3" fill="#161b22" stroke="#e3b341"/>
+      <text x="516" y="171" text-anchor="middle" fill="#e3b341">Output secret &amp; toxicity scan</text>
+      <rect x="422" y="181" width="188" height="18" rx="3" fill="#161b22" stroke="#e3b341"/>
+      <text x="516" y="194" text-anchor="middle" fill="#e3b341">Response policy enforcement</text>
+
+      <!-- threat intel badge -->
+      <rect x="422" y="206" width="188" height="16" rx="3" fill="#161b22" stroke="#3fb950" stroke-dasharray="3,2"/>
+      <text x="516" y="218" text-anchor="middle" fill="#3fb950" font-size="9">Threat intel updated continuously — not static rules</text>
+
+      <!-- block exit arrow -->
+      <line x1="516" y1="226" x2="516" y2="272" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <polygon points="511,272 516,282 521,272" fill="#f85149"/>
+      <rect x="424" y="284" width="184" height="18" rx="4" fill="rgba(248,81,73,0.08)" stroke="#f85149"/>
+      <text x="516" y="296" text-anchor="middle" fill="#f85149" font-size="9" class="warn-pulse">✗ BLOCKED — LLM never called · $0 cost</text>
+
+      <!-- flow security → models (approved) -->
+      <line x1="622" y1="96"  x2="678" y2="66"  stroke="#3fb950" stroke-width="1.5" class="flow-line"/>
+      <line x1="622" y1="112" x2="678" y2="112" stroke="#3fb950" stroke-width="1.5" class="flow-line"/>
+      <line x1="622" y1="128" x2="678" y2="156" stroke="#3fb950" stroke-width="1.5" class="flow-line"/>
+      <text x="648" y="46" text-anchor="middle" fill="#3fb950" font-size="9" class="secure-glow">✓ approved only</text>
+
+      <!-- MODELS -->
+      <text x="748" y="16" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="bold">LLM PROVIDERS</text>
+      <rect x="680" y="44"  width="136" height="36" rx="6" fill="#163a6b" stroke="#1b6ca8"/>
+      <text x="748" y="60"  text-anchor="middle" fill="#58a6ff" font-weight="bold">Cloud LLM</text>
+      <text x="748" y="74"  text-anchor="middle" fill="#8b949e">external provider</text>
+      <rect x="680" y="90"  width="136" height="36" rx="6" fill="#163a6b" stroke="#1b6ca8"/>
+      <text x="748" y="106" text-anchor="middle" fill="#58a6ff" font-weight="bold">Private LLM</text>
+      <text x="748" y="120" text-anchor="middle" fill="#8b949e">on-prem / VPC</text>
+      <rect x="680" y="136" width="136" height="36" rx="6" fill="#163a6b" stroke="#1b6ca8"/>
+      <text x="748" y="152" text-anchor="middle" fill="#58a6ff" font-weight="bold">Open-Source</text>
+      <text x="748" y="166" text-anchor="middle" fill="#8b949e">self-hosted</text>
+
+      <!-- AUDIT LOG -->
+      <rect x="680" y="188" width="136" height="36" rx="6" fill="#1c2128" stroke="#e3b341"/>
+      <text x="748" y="204" text-anchor="middle" fill="#e3b341" font-weight="bold">Audit Log</text>
+      <text x="748" y="218" text-anchor="middle" fill="#8b949e">every request recorded</text>
+      <line x1="622" y1="194" x2="680" y2="206" stroke="#e3b341" stroke-width="1" stroke-dasharray="3,2"/>
+
+    </svg>
+  </div>
+
+  <div class="callouts" style="margin-top:24px;">
+    <div class="callout success">
+      <div class="callout-title">✅ Pre-call Blocking = Zero Cost, Zero Exposure</div>
+      <p>When a request is caught at the pre-call stage, the LLM is never called. No tokens consumed. No data sent to any external provider. No cost. The security layer pays for itself on every blocked malicious request.</p>
+    </div>
+    <div class="callout info">
+      <div class="callout-title">💡 What the Security Layer Provides</div>
+      <p><strong>Runtime injection detection</strong> — behavioral analysis, not static patterns attackers can work around. <strong>PII redaction</strong> — personal data stripped from both prompt and response before it crosses any boundary. <strong>Jailbreak recognition</strong> — catches attempts to override system prompts or safety constraints. <strong>Output scanning</strong> — catches secrets or harmful content the model may have generated. <strong>Continuously updated threat signatures</strong> — maintained by a security team, not by your developers writing and maintaining regex rules.</p>
+    </div>
+    <div class="callout info">
+      <div class="callout-title">💡 What a Fully Configured Gateway Provides on Top</div>
+      <p><strong>Virtual keys</strong> — each app gets its own scoped credential; revoke one without affecting others. <strong>Per-key guardrails</strong> — different security rules per application. <strong>Full request traces</strong> — prompt, response, tokens, latency, and outcome for every call. <strong>Budget thresholds</strong> — stop traffic automatically when an app exceeds its spend limit. <strong>Smart routing</strong> — send simple queries to cheap models, complex ones to capable models. <strong>Fallback routing</strong> — keep traffic flowing when a provider has an incident.</p>
+    </div>
+  </div>
+
+  <div class="run-section">
+    <div class="section-label">Lab Exercise</div>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>10_ai_gateway/01_gateway_demo.py</code> — sends injection, PII, and secret extraction attacks through an unprotected route, then the same attacks through a secured route, then shows gateway traces and virtual key cost tracking. Requires the gateway running (<code>docker compose up -d</code>).</p>
+    <button class="run-btn" onclick="runLab('10','10')">▶ Run Lab</button>
+    <div class="terminal" id="term-10">
+      <div class="term-header"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-label" id="lbl-10">waiting</span></div>
+      <div class="term-body" id="body-10"></div>
+    </div>
+  </div>
+
+  <div class="section-label">Key Takeaways</div>
+  <div class="takeaways">
+    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Most companies use a gateway as a dumb proxy — and miss everything it can do.</strong> Visibility into token usage, routing to cheaper models, per-app rate limiting, and caching are all available but rarely configured. The result is invisible spend and zero control.</p></div>
+    <div class="takeaway"><div class="takeaway-num">2</div><p><strong>A gateway without security controls is a well-organized pipe to your models.</strong> Injection, PII, and secrets pass through faithfully. Adding a security layer — scanning every request and response at the gateway level — covers every application automatically, with no code change required.</p></div>
+    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>Pre-call blocking costs nothing.</strong> A request caught before the LLM is called costs zero tokens and exposes zero data. The security layer pays for itself on every blocked malicious request.</p></div>
+    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>The audit log is your investigation starting point.</strong> Without structured per-request logs you cannot answer: "What did that application send to the model at 3am?" Every request — passed or blocked — must be recorded with consistent structure.</p></div>
+  </div>
+</div>
+<script src="/static/lab.js"></script>
+<footer style="text-align:center;padding:24px 0 16px;font-size:12px;color:#484f58;border-top:1px solid #21262d;margin-top:40px;">Developed by Fernando Casaloti</footer>
+</body>
+</html>

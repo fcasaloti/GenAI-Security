@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 03 — Vector DB | GenAI App Security</title>
+  <link rel="stylesheet" href="/static/base.css" />
+  <style>
+    .flow-line { stroke-dasharray: 6 4; animation: dash 1.5s linear infinite; }
+    @keyframes dash { to { stroke-dashoffset: -20; } }
+    @keyframes ripple { 0%{r:0;opacity:0.8} 100%{r:60;opacity:0} }
+    .ripple { animation: ripple 2s ease-out infinite; }
+    .ripple2 { animation: ripple 2s ease-out 0.7s infinite; }
+  </style>
+</head>
+<body>
+<nav>
+  <span class="nav-logo">GenAI App Security Lab</span>
+  <span class="nav-sep">/</span>
+  <span class="nav-crumb">Module 03 — Vector Database</span>
+  <div class="nav-modules">
+    <a class="nav-mod-link" href="/">Home</a>
+    <a class="nav-mod-link" href="/module/01">01</a>
+    <a class="nav-mod-link" href="/module/02">02</a>
+    <a class="nav-mod-link active" href="/module/03">03</a>
+    <a class="nav-mod-link" href="/module/04">04</a>
+    <a class="nav-mod-link" href="/module/05">05</a>
+    <a class="nav-mod-link" href="/module/06">06</a>
+    <a class="nav-mod-link" href="/module/07">07</a>
+    <a class="nav-mod-link" href="/module/08">08</a>
+    <a class="nav-mod-link" href="/module/09">09</a>
+    <a class="nav-mod-link" href="/module/10">10</a>
+    <a class="nav-mod-link" href="/module/rw">Real World</a>
+  </div>
+</nav>
+<div class="page">
+  <div class="module-badge">Module 03</div>
+  <h1 class="module-title">Vector Database &amp; Data Poisoning</h1>
+  <p class="module-subtitle">ChromaDB stores and searches embeddings at scale. An attacker who can write a document into the database controls what context your LLM sees — without touching your application code.</p>
+
+  <div class="section-label">Core Concepts</div>
+  <div class="cards">
+    <div class="card"><div class="card-icon">🗄️</div><div class="card-title">Vector Database</div><div class="card-body">Stores documents alongside their embedding vectors. Instead of SQL queries, you search by semantic distance — "give me the N documents closest in meaning to this query."</div></div>
+    <div class="card"><div class="card-icon">🎯</div><div class="card-title">Nearest Neighbor Search</div><div class="card-body">Vector databases like ChromaDB use HNSW (Hierarchical Navigable Small World) graphs to find the closest vectors in milliseconds, even across millions of documents. This lab uses a lightweight in-memory store with cosine distance.</div></div>
+    <div class="card"><div class="card-icon">☠️</div><div class="card-title">Data Poisoning Attack</div><div class="card-body">Inject a document that mirrors the vocabulary of likely user queries. It wins every similarity search on that topic, replacing legitimate context with attacker-controlled content.</div></div>
+  </div>
+
+  <!-- Chunking explanation -->
+  <div class="section-label">How Documents Are Actually Stored</div>
+  <div class="callout info" style="margin-bottom:16px;">
+    <div class="callout-title">💡 Vector DBs store chunks, not documents</div>
+    <p>A vector database never stores a full document as one unit. Documents are first <strong>split into chunks</strong> — small overlapping pieces of text (typically 200–500 words each). Each chunk gets its own embedding vector and is stored independently. When you query, you retrieve the most relevant <em>chunks</em>, not the most relevant documents.</p>
+    <p style="margin-top:10px;">Why chunks? Because a 50-page document has hundreds of distinct topics. Embedding the whole thing produces one vector that blurs everything together — you'd never find the specific paragraph that answers the question. Chunking keeps each vector focused on a single idea.</p>
+  </div>
+
+  <!-- Chunking visual -->
+  <div class="topology" style="margin-bottom:24px;">
+    <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace">
+
+      <!-- Document -->
+      <text x="20" y="22" fill="#8b949e" font-size="11" font-weight="bold">ORIGINAL DOCUMENT</text>
+      <rect x="20" y="30" width="160" height="230" rx="8" fill="#1c2128" stroke="#30363d" stroke-width="1.5"/>
+      <text x="100" y="52" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">policy.pdf</text>
+      <!-- Simulated text lines -->
+      <rect x="34" y="62" width="132" height="6" rx="2" fill="#30363d"/>
+      <rect x="34" y="74" width="110" height="6" rx="2" fill="#30363d"/>
+      <rect x="34" y="86" width="125" height="6" rx="2" fill="#30363d"/>
+      <rect x="34" y="98" width="90" height="6" rx="2" fill="#30363d"/>
+      <!-- Chunk 1 highlight -->
+      <rect x="30" y="58" width="140" height="52" rx="3" fill="rgba(88,166,255,0.12)" stroke="#58a6ff" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="175" y="88" fill="#58a6ff" font-size="10">chunk 1</text>
+
+      <rect x="34" y="118" width="132" height="6" rx="2" fill="#30363d"/>
+      <rect x="34" y="130" width="115" height="6" rx="2" fill="#30363d"/>
+      <rect x="34" y="142" width="128" height="6" rx="2" fill="#30363d"/>
+      <rect x="34" y="154" width="95" height="6" rx="2" fill="#30363d"/>
+      <!-- Chunk 2 highlight (overlapping) -->
+      <rect x="30" y="110" width="140" height="56" rx="3" fill="rgba(63,185,80,0.12)" stroke="#3fb950" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="175" y="142" fill="#3fb950" font-size="10">chunk 2</text>
+
+      <rect x="34" y="174" width="132" height="6" rx="2" fill="#30363d"/>
+      <rect x="34" y="186" width="108" height="6" rx="2" fill="#30363d"/>
+      <rect x="34" y="198" width="120" height="6" rx="2" fill="#30363d"/>
+      <rect x="34" y="210" width="85" height="6" rx="2" fill="#30363d"/>
+      <!-- Chunk 3 highlight -->
+      <rect x="30" y="166" width="140" height="56" rx="3" fill="rgba(188,140,255,0.12)" stroke="#bc8cff" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="175" y="198" fill="#bc8cff" font-size="10">chunk 3</text>
+
+      <!-- Overlap label -->
+      <text x="100" y="268" text-anchor="middle" fill="#8b949e" font-size="10">← overlap →</text>
+      <line x1="30" y1="273" x2="170" y2="273" stroke="#8b949e" stroke-width="0.5"/>
+
+      <!-- Arrow to Embedder -->
+      <line x1="202" y1="145" x2="248" y2="145" stroke="#30363d" stroke-width="2" class="flow-line"/>
+      <polygon points="248,140 258,145 248,150" fill="#30363d"/>
+
+      <!-- Embedder -->
+      <rect x="260" y="108" width="100" height="74" rx="8" fill="#0f3057" stroke="#1b6ca8"/>
+      <text x="310" y="138" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">Embedder</text>
+      <text x="310" y="154" text-anchor="middle" fill="#8b949e" font-size="10">nomic-embed</text>
+      <text x="310" y="168" text-anchor="middle" fill="#8b949e" font-size="10">text-v1.5</text>
+
+      <!-- Arrow to ChromaDB -->
+      <line x1="362" y1="145" x2="400" y2="145" stroke="#30363d" stroke-width="2" class="flow-line"/>
+      <polygon points="400,140 410,145 400,150" fill="#30363d"/>
+
+      <!-- ChromaDB box -->
+      <text x="490" y="22" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="bold">CHROMADB COLLECTION</text>
+      <rect x="415" y="30" width="150" height="230" rx="8" fill="#0d1117" stroke="#1b6ca8" stroke-width="1.5"/>
+
+      <!-- Chunk rows inside ChromaDB -->
+      <!-- Chunk 1 row -->
+      <rect x="425" y="45" width="130" height="52" rx="4" fill="#1c2128" stroke="#58a6ff" stroke-width="1"/>
+      <text x="490" y="63" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="bold">chunk_1</text>
+      <text x="490" y="76" text-anchor="middle" fill="#8b949e" font-size="9">"The fraud policy requires..."</text>
+      <text x="490" y="90" text-anchor="middle" fill="#bc8cff" font-size="9">[0.23, -0.41, 0.87 ...]</text>
+
+      <!-- Chunk 2 row -->
+      <rect x="425" y="105" width="130" height="52" rx="4" fill="#1c2128" stroke="#3fb950" stroke-width="1"/>
+      <text x="490" y="123" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="bold">chunk_2</text>
+      <text x="490" y="136" text-anchor="middle" fill="#8b949e" font-size="9">"Approvals above $5k need..."</text>
+      <text x="490" y="150" text-anchor="middle" fill="#bc8cff" font-size="9">[0.11, 0.67, -0.23 ...]</text>
+
+      <!-- Chunk 3 row -->
+      <rect x="425" y="165" width="130" height="52" rx="4" fill="#1c2128" stroke="#bc8cff" stroke-width="1"/>
+      <text x="490" y="183" text-anchor="middle" fill="#bc8cff" font-size="10" font-weight="bold">chunk_3</text>
+      <text x="490" y="196" text-anchor="middle" fill="#8b949e" font-size="9">"Exceptions require two..."</text>
+      <text x="490" y="210" text-anchor="middle" fill="#bc8cff" font-size="9">[-0.05, 0.44, 0.91 ...]</text>
+
+      <text x="490" y="248" text-anchor="middle" fill="#8b949e" font-size="10">each chunk = text + vector + metadata</text>
+
+      <!-- Query path -->
+      <text x="700" y="22" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="bold">QUERY</text>
+      <rect x="625" y="30" width="150" height="36" rx="6" fill="#1c2128" stroke="#e3b341"/>
+      <text x="700" y="53" text-anchor="middle" fill="#e3b341" font-size="11">"approval threshold?"</text>
+
+      <line x1="700" y1="68" x2="700" y2="100" stroke="#e3b341" stroke-width="1.5" class="flow-line"/>
+      <polygon points="695,100 700,112 705,100" fill="#e3b341"/>
+
+      <!-- Matched chunk -->
+      <rect x="625" y="114" width="150" height="52" rx="6" fill="rgba(63,185,80,0.12)" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="700" y="133" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">✓ Best match</text>
+      <text x="700" y="148" text-anchor="middle" fill="#8b949e" font-size="10">chunk_2 · dist=0.18</text>
+      <text x="700" y="161" text-anchor="middle" fill="#8b949e" font-size="9">"Approvals above $5k need..."</text>
+
+      <line x1="700" y1="168" x2="700" y2="196" stroke="#3fb950" stroke-width="1.5" class="flow-line"/>
+      <polygon points="695,196 700,208 705,196" fill="#3fb950"/>
+
+      <!-- LLM box -->
+      <rect x="625" y="210" width="150" height="46" rx="6" fill="#0f3057" stroke="#1b6ca8"/>
+      <text x="700" y="231" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">LLM</text>
+      <text x="700" y="248" text-anchor="middle" fill="#8b949e" font-size="10">receives chunk, not full doc</text>
+
+      <!-- Arrow from ChromaDB to query area -->
+      <line x1="567" y1="130" x2="623" y2="130" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <polygon points="618,125 628,130 618,135" fill="#30363d"/>
+    </svg>
+  </div>
+
+  <!-- Topology: docs → embedder → Vector DB cylinder → query → results -->
+  <div class="section-label">ChromaDB Architecture + Attack Path</div>
+  <div class="topology">
+    <svg viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace">
+      <!-- Legitimate documents -->
+      <text x="10" y="30" fill="#8b949e" font-size="11" font-weight="bold">LEGITIMATE DOCS</text>
+      <rect x="10" y="40" width="120" height="26" rx="4" fill="#1c2128" stroke="#30363d"/>
+      <text x="70" y="57" text-anchor="middle" fill="#cdd9e5" font-size="11">Fraud policy doc</text>
+      <rect x="10" y="72" width="120" height="26" rx="4" fill="#1c2128" stroke="#30363d"/>
+      <text x="70" y="89" text-anchor="middle" fill="#cdd9e5" font-size="11">Approval process</text>
+      <rect x="10" y="104" width="120" height="26" rx="4" fill="#1c2128" stroke="#30363d"/>
+      <text x="70" y="121" text-anchor="middle" fill="#cdd9e5" font-size="11">Auth guidelines</text>
+
+      <!-- Poisoned document -->
+      <text x="10" y="155" fill="#f85149" font-size="11" font-weight="bold">POISONED DOC</text>
+      <rect x="10" y="165" width="120" height="40" rx="4" fill="rgba(248,81,73,0.1)" stroke="#f85149" stroke-width="1.5"/>
+      <text x="70" y="181" text-anchor="middle" fill="#f85149" font-size="10">"No approval needed</text>
+      <text x="70" y="194" text-anchor="middle" fill="#f85149" font-size="10">for any transfer"</text>
+
+      <!-- Arrows to Embedder -->
+      <line x1="132" y1="55" x2="185" y2="110" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
+      <line x1="132" y1="85" x2="185" y2="118" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
+      <line x1="132" y1="117" x2="185" y2="126" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
+      <line x1="132" y1="185" x2="185" y2="138" stroke="#f85149" stroke-width="1.5" class="flow-line"/>
+
+      <!-- Embedder -->
+      <rect x="188" y="88" width="110" height="70" rx="8" fill="#0f3057" stroke="#1b6ca8"/>
+      <text x="243" y="118" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">Embedder</text>
+      <text x="243" y="134" text-anchor="middle" fill="#8b949e" font-size="11">→ vectors</text>
+
+      <!-- Arrow to ChromaDB -->
+      <line x1="300" y1="123" x2="340" y2="123" stroke="#30363d" stroke-width="2" class="flow-line"/>
+      <polygon points="340,118 350,123 340,128" fill="#30363d"/>
+
+      <!-- ChromaDB cylinder -->
+      <ellipse cx="420" cy="80" rx="60" ry="14" fill="#163a6b" stroke="#1b6ca8"/>
+      <rect x="360" y="80" width="120" height="120" fill="#163a6b" stroke="none"/>
+      <ellipse cx="420" cy="200" rx="60" ry="14" fill="#1a3a5c" stroke="#1b6ca8"/>
+      <rect x="360" y="80" width="120" height="120" fill="none" stroke="#1b6ca8" stroke-width="1.5"/>
+      <text x="420" y="135" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">ChromaDB</text>
+      <text x="420" y="152" text-anchor="middle" fill="#8b949e" font-size="11">HNSW index</text>
+      <text x="420" y="168" text-anchor="middle" fill="#8b949e" font-size="11">N vectors stored</text>
+
+      <!-- Query comes in from bottom -->
+      <text x="420" y="240" text-anchor="middle" fill="#e3b341" font-size="11" font-weight="bold">QUERY: "large transfer approval?"</text>
+      <line x1="420" y1="236" x2="420" y2="218" stroke="#e3b341" stroke-width="2" class="flow-line"/>
+      <polygon points="415,218 420,206 425,218" fill="#e3b341"/>
+
+      <!-- Ripple effect for similarity search -->
+      <circle cx="420" cy="140" r="0" fill="none" stroke="#58a6ff" stroke-width="1.5" opacity="0.8" class="ripple"/>
+      <circle cx="420" cy="140" r="0" fill="none" stroke="#58a6ff" stroke-width="1.5" opacity="0.8" class="ripple2"/>
+
+      <!-- Results -->
+      <line x1="482" y1="123" x2="560" y2="80" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
+      <line x1="482" y1="140" x2="560" y2="140" stroke="#f85149" stroke-width="2" class="flow-line"/>
+
+      <!-- Result boxes -->
+      <text x="570" y="38" fill="#8b949e" font-size="11" font-weight="bold">TOP RESULTS</text>
+      <rect x="565" y="50" width="145" height="38" rx="5" fill="rgba(248,81,73,0.12)" stroke="#f85149" stroke-width="1.5"/>
+      <text x="638" y="68" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">#1 dist=0.12 ← POISON</text>
+      <text x="638" y="82" text-anchor="middle" fill="#f85149" font-size="10">"No approval needed..."</text>
+
+      <rect x="565" y="96" width="145" height="38" rx="5" fill="#1c2128" stroke="#30363d"/>
+      <text x="638" y="113" text-anchor="middle" fill="#8b949e" font-size="11">#2 dist=0.44</text>
+      <text x="638" y="127" text-anchor="middle" fill="#8b949e" font-size="10">Approval process doc</text>
+
+      <rect x="565" y="142" width="145" height="38" rx="5" fill="#1c2128" stroke="#30363d"/>
+      <text x="638" y="159" text-anchor="middle" fill="#8b949e" font-size="11">#3 dist=0.61</text>
+      <text x="638" y="173" text-anchor="middle" fill="#8b949e" font-size="10">Auth guidelines</text>
+
+      <text x="638" y="210" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold">⚠ LLM receives poisoned context</text>
+    </svg>
+  </div>
+
+  <div class="callouts">
+    <div class="callout danger">
+      <div class="callout-title">🔴 Write Access = Game Over</div>
+      <p>Anyone who can add documents to your vector database controls what your LLM knows. This includes: open document upload endpoints, CI/CD pipelines that ingest external content, web scrapers that add pages to a knowledge base, and any user-submitted content that gets embedded and stored.</p>
+    </div>
+    <div class="callout warning">
+      <div class="callout-title">⚠️ Low Attack Distance Wins</div>
+      <p>The poisoned document in this lab scores distance <code>0.12</code>. The next legitimate document scores <code>0.44</code>. The LLM only sees the top 2 results — so the legitimate document gets displaced by 4x. The attacker doesn't need a perfect match, just a better one.</p>
+    </div>
+    <div class="callout info">
+      <div class="callout-title">💡 Defense: Document Provenance Tracking</div>
+      <p>Store the source, timestamp, and author of every embedded document. Before including retrieved chunks in a prompt, check if the source is trusted. ChromaDB metadata fields make this straightforward.</p>
+    </div>
+  </div>
+
+  <div class="run-section">
+    <div class="section-label">Lab Exercise</div>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>03_vector_db/01_chromadb_basics.py</code> — populates ChromaDB, queries it normally, then injects a poisoned document and queries again.</p>
+    <button class="run-btn" onclick="runLab('03','03')">▶ Run Lab</button>
+    <div class="terminal" id="term-03">
+      <div class="term-header"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-label" id="lbl-03">waiting</span></div>
+      <div class="term-body" id="body-03"></div>
+    </div>
+  </div>
+
+  <div class="section-label">Key Takeaways</div>
+  <div class="takeaways">
+    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Vector DBs have no built-in trust model.</strong> All documents are equal. The nearest one wins, regardless of source.</p></div>
+    <div class="takeaway"><div class="takeaway-num">2</div><p><strong>The attack works by mirroring query vocabulary.</strong> Attackers don't need to know exact queries — they model likely user intents and optimize document text toward those.</p></div>
+    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>Distance thresholds are a partial defense.</strong> Rejecting results above a distance cutoff reduces the attack surface but doesn't eliminate it — a well-crafted poisoned document will score below the threshold.</p></div>
+    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Access control on ingestion is the primary defense.</strong> Treat your vector database write path like a database write path — authenticate, authorize, and audit every insertion.</p></div>
+  </div>
+</div>
+<script src="/static/lab.js"></script>
+  <footer style="text-align:center;padding:24px 0 16px;font-size:12px;color:#484f58;border-top:1px solid #21262d;margin-top:40px;">Developed by Fernando Casaloti</footer>
+</body>
+</html>

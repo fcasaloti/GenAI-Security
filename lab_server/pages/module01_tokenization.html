@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 01 — Tokenization | GenAI App Security Lab</title>
+  <link rel="stylesheet" href="/static/base.css" />
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --border:   #30363d;
+      --text:     #e6edf3;
+      --muted:    #8b949e;
+      --accent:   #58a6ff;
+      --green:    #3fb950;
+      --orange:   #f0883e;
+      --red:      #f85149;
+      --purple:   #bc8cff;
+
+      /* Token palette — 8 colors cycling */
+      --t0: #1f4068; --t1: #1b6ca8; --t2: #163a6b; --t3: #0d3b6e;
+      --t4: #1a3a5c; --t5: #0f3057; --t6: #1c3f6e; --t7: #17375e;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── Nav ── */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo { font-weight: 700; font-size: 14px; color: var(--accent); letter-spacing: 0.5px; }
+    .nav-sep  { color: var(--border); }
+    .nav-crumb { color: var(--muted); font-size: 13px; }
+
+    /* ── Layout ── */
+    .page { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── Module header ── */
+    .module-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(88, 166, 255, 0.1);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      color: var(--accent); font-size: 12px; font-weight: 600;
+      padding: 4px 12px; border-radius: 20px; letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+    .module-title { font-size: 36px; font-weight: 700; line-height: 1.2; margin-bottom: 10px; }
+    .module-subtitle { color: var(--muted); font-size: 16px; margin-bottom: 40px; max-width: 640px; }
+
+    /* ── Section headings ── */
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── Concept cards ── */
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px;
+    }
+    .card-icon { font-size: 24px; margin-bottom: 10px; }
+    .card-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .card-body  { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+    /* ── Interactive demo ── */
+    .demo-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 24px; margin-bottom: 48px;
+    }
+    .demo-input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); font-size: 15px;
+      padding: 10px 14px; outline: none; margin-bottom: 20px;
+      transition: border-color 0.15s;
+    }
+    .demo-input:focus { border-color: var(--accent); }
+
+    .token-display {
+      display: flex; flex-wrap: wrap; gap: 6px; min-height: 40px;
+      margin-bottom: 16px;
+    }
+    .token-chip {
+      display: inline-flex; flex-direction: column; align-items: center;
+      border-radius: 5px; padding: 4px 10px;
+      font-family: "SF Mono", "Fira Code", monospace; font-size: 13px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--t0);
+      animation: pop 0.15s ease;
+    }
+    @keyframes pop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .token-text { color: #fff; }
+    .token-id   { font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+
+    .token-stats {
+      display: flex; gap: 24px; color: var(--muted); font-size: 13px;
+    }
+    .token-stats span { color: var(--text); font-weight: 600; }
+
+    /* ── Security callout ── */
+    .callout {
+      border-radius: 8px; padding: 16px 20px;
+      margin-bottom: 48px; border-left: 3px solid;
+      font-size: 14px;
+    }
+    .callout.warning { background: rgba(240,136,62,0.08); border-color: var(--orange); }
+    .callout.danger  { background: rgba(248,81,73,0.08);  border-color: var(--red); }
+    .callout.info    { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+    .callout-title   { font-weight: 700; margin-bottom: 6px; }
+    .callout p        { color: var(--muted); line-height: 1.5; }
+    .callout code    {
+      background: rgba(255,255,255,0.08); border-radius: 3px;
+      padding: 1px 5px; font-family: monospace; font-size: 13px; color: var(--text);
+    }
+
+    /* ── Run Lab button + terminal ── */
+    .run-section { margin-bottom: 48px; }
+    .run-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green); color: #000; font-weight: 700;
+      font-size: 14px; padding: 10px 24px; border-radius: 6px;
+      border: none; cursor: pointer; transition: opacity 0.15s;
+    }
+    .run-btn:hover   { opacity: 0.85; }
+    .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .terminal {
+      background: #010409; border: 1px solid var(--border); border-radius: 8px;
+      margin-top: 16px; display: none;
+    }
+    .terminal.visible { display: block; }
+    .term-header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 8px 14px; border-radius: 8px 8px 0 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .term-dot.red { background: #ff5f57; }
+    .term-dot.yellow { background: #ffbd2e; }
+    .term-dot.green { background: #28c840; }
+    .term-label { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+    .term-body {
+      padding: 16px; font-family: "SF Mono", "Fira Code", Menlo, monospace;
+      font-size: 13px; line-height: 1.7; color: #cdd9e5;
+      max-height: 480px; overflow-y: auto;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .term-line-key   { color: var(--accent); }
+    .term-line-token { color: var(--green); }
+    .term-line-id    { color: var(--purple); }
+    .term-line-count { color: var(--orange); }
+    .term-line-note  { color: var(--muted); }
+    .term-done-badge {
+      display: inline-block; background: rgba(63,185,80,0.15); color: var(--green);
+      border: 1px solid rgba(63,185,80,0.3); border-radius: 4px;
+      font-size: 12px; padding: 2px 8px; margin-top: 8px;
+    }
+
+    /* ── Key takeaways ── */
+    .takeaways { margin-bottom: 48px; }
+    .takeaway-item {
+      display: flex; gap: 12px; padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .takeaway-item:last-child { border-bottom: none; }
+    .takeaway-num {
+      flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(88,166,255,0.15); color: var(--accent);
+      font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+    .takeaway-text { font-size: 14px; color: var(--muted); }
+    .takeaway-text strong { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav>
+  <span class="nav-logo">GenAI App Security Lab</span>
+  <span class="nav-sep">/</span>
+  <span class="nav-crumb">Module 01 — Tokenization</span>
+  <div class="nav-modules">
+    <a class="nav-mod-link" href="/">Home</a>
+    <a class="nav-mod-link active" href="/module/01">01</a>
+    <a class="nav-mod-link" href="/module/02">02</a>
+    <a class="nav-mod-link" href="/module/03">03</a>
+    <a class="nav-mod-link" href="/module/04">04</a>
+    <a class="nav-mod-link" href="/module/05">05</a>
+    <a class="nav-mod-link" href="/module/06">06</a>
+    <a class="nav-mod-link" href="/module/07">07</a>
+    <a class="nav-mod-link" href="/module/08">08</a>
+    <a class="nav-mod-link" href="/module/09">09</a>
+    <a class="nav-mod-link" href="/module/10">10</a>
+    <a class="nav-mod-link" href="/module/rw">Real World</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ── Header ── -->
+  <div class="module-badge">MODULE 01</div>
+  <h1 class="module-title">Tokenization</h1>
+  <p class="module-subtitle">
+    LLMs don't read words — they read <em>tokens</em>. Understanding how text is
+    fragmented before reaching the model is the foundation of every prompt injection,
+    filter bypass, and token manipulation attack.
+  </p>
+
+  <!-- ── Concept cards ── -->
+  <div class="section-label">Core Concepts</div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">✂️</div>
+      <div class="card-title">What is a token?</div>
+      <div class="card-body">
+        A token is a text fragment — roughly a word, a punctuation mark, or a common
+        sub-word. The model never sees full words; it sees integer IDs that index
+        into a 100,000-entry vocabulary table.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📐</div>
+      <div class="card-title">Byte-Pair Encoding</div>
+      <div class="card-body">
+        Common fragments ("the", "ing", "tion") get a single token ID.
+        Rare fragments split into multiple tokens. "Felipe" = 2 tokens.
+        "SQL" = 1 token because it appears often in training data.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔢</div>
+      <div class="card-title">Why it matters</div>
+      <div class="card-body">
+        Everything the model processes — your system prompt, user input, tool results —
+        is first tokenized. Context windows, cost, and security filters all operate
+        at the token level, not the character or word level.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Interactive demo ── -->
+  <div class="section-label">Live Demo — Type any text</div>
+  <div class="demo-box">
+    <input
+      class="demo-input"
+      id="demoInput"
+      type="text"
+      placeholder="Type something… e.g. &quot;Ignore all previous instructions&quot;"
+      value="Felipe is learning AI security"
+    />
+    <div class="token-display" id="tokenDisplay"></div>
+    <div class="token-stats" id="tokenStats">
+      Tokens: <span id="statCount">0</span>&nbsp;&nbsp;
+      Characters: <span id="statChars">0</span>&nbsp;&nbsp;
+      Ratio: <span id="statRatio">—</span> chars/token
+    </div>
+  </div>
+
+  <!-- ── Security callouts ── -->
+  <div class="section-label">Security Implications</div>
+
+  <div class="callout warning">
+    <div class="callout-title">⚠️ Token Smuggling</div>
+    <p>
+      A naive content filter searching for the string <code>ignore</code> works on
+      decoded text. But in crafted context, tokenization boundaries can shift —
+      splitting a banned word across token boundaries. Filters must operate on
+      <strong>decoded output</strong>, not raw token IDs, and should be redundant
+      at multiple layers.
+    </p>
+  </div>
+
+  <div class="callout danger">
+    <div class="callout-title">🔴 Cost Amplification Attack</div>
+    <p>
+      Rare Unicode, unusual whitespace, or repeated rare sequences produce far more
+      tokens per character than normal text. An attacker can craft inputs that
+      exhaust your context window or inflate API costs — a token-level
+      denial-of-service. Always validate and cap input length <em>before</em>
+      tokenizing.
+    </p>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-title">💡 Real-world connection</div>
+    <p>
+      Every prompt injection in modules 03–07 works because the model cannot
+      distinguish between developer instructions and user text at the token level —
+      they are all just integers in a sequence. Tokenization is where that
+      equivalence begins.
+    </p>
+  </div>
+
+  <!-- ── Run Lab ── -->
+  <div class="run-section">
+    <div class="section-label">Lab Exercise — Run the Python Script Live</div>
+    <p style="color:var(--muted); font-size:14px; margin-bottom:16px;">
+      Executes <code style="color:var(--text)">01_llm_basics/01_tokenization.py</code> on your
+      machine and streams the output below in real time.
+    </p>
+    <button class="run-btn" id="runBtn" onclick="runLab()">
+      ▶ Run Lab
+    </button>
+
+    <div class="terminal" id="terminal">
+      <div class="term-header">
+        <div class="term-dot red"></div>
+        <div class="term-dot yellow"></div>
+        <div class="term-dot green"></div>
+        <span class="term-label" id="termLabel">waiting…</span>
+      </div>
+      <div class="term-body" id="termBody"></div>
+    </div>
+  </div>
+
+  <!-- ── Key takeaways ── -->
+  <div class="section-label">Key Takeaways</div>
+  <div class="takeaways">
+    <div class="takeaway-item">
+      <div class="takeaway-num">1</div>
+      <div class="takeaway-text">
+        <strong>Token count ≠ word count.</strong> "Felipe" costs 2 tokens. Ignoring this
+        leads to context window overflows and inaccurate cost estimates.
+      </div>
+    </div>
+    <div class="takeaway-item">
+      <div class="takeaway-num">2</div>
+      <div class="takeaway-text">
+        <strong>Security filters must work on decoded text.</strong> Checking raw token IDs
+        is fragile — the same word can tokenize differently in different contexts.
+      </div>
+    </div>
+    <div class="takeaway-item">
+      <div class="takeaway-num">3</div>
+      <div class="takeaway-text">
+        <strong>All text — system prompt, user input, tool output — becomes the same token sequence.</strong>
+        The model has no built-in way to know which tokens came from a trusted source.
+        This is the root cause of prompt injection.
+      </div>
+    </div>
+    <div class="takeaway-item">
+      <div class="takeaway-num">4</div>
+      <div class="takeaway-text">
+        <strong>Input validation must happen before tokenization.</strong>
+        Length limits, character allow-lists, and rate limiting are your first line of defense.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.page -->
+
+<script>
+  // ── Token color palette (cycling) ─────────────────────────────────────────
+  const COLORS = [
+    '#1a3a6e','#1b5ea8','#0f4a7a','#1a5c8e',
+    '#163d6b','#0d4070','#1c4a8e','#17456e',
+  ];
+  const TEXT_COLORS = [
+    '#90c0ff','#70b8ff','#80c4ff','#78c8ff',
+    '#88c0f8','#82c8ff','#8cbcff','#88c8f0',
+  ];
+
+  // ── Live tokenization demo ────────────────────────────────────────────────
+  let debounceTimer;
+  const input   = document.getElementById('demoInput');
+  const display = document.getElementById('tokenDisplay');
+  const statCount = document.getElementById('statCount');
+  const statChars = document.getElementById('statChars');
+  const statRatio = document.getElementById('statRatio');
+
+  async function tokenize(text) {
+    if (!text.trim()) {
+      display.innerHTML = '';
+      statCount.textContent = '0';
+      statChars.textContent = '0';
+      statRatio.textContent = '—';
+      return;
+    }
+    try {
+      const res = await fetch(`/api/tokenize?text=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      renderTokens(data.tokens, data.ids);
+      statCount.textContent = data.count;
+      statChars.textContent = text.length;
+      statRatio.textContent = data.count > 0
+        ? (text.length / data.count).toFixed(1)
+        : '—';
+    } catch(e) {
+      display.innerHTML = '<span style="color:var(--muted)">Server not running — start lab_server/server.py</span>';
+    }
+  }
+
+  function renderTokens(tokens, ids) {
+    display.innerHTML = '';
+    tokens.forEach((tok, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'token-chip';
+      chip.style.background = COLORS[i % COLORS.length];
+      chip.style.borderColor = TEXT_COLORS[i % TEXT_COLORS.length] + '40';
+
+      const label = tok === ' ' ? '·' : tok.replace(/ /g, '·');
+      chip.innerHTML = `
+        <span class="token-text" style="color:${TEXT_COLORS[i % TEXT_COLORS.length]}">${escHtml(label)}</span>
+        <span class="token-id">${ids[i]}</span>
+      `;
+      display.appendChild(chip);
+    });
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => tokenize(input.value), 200);
+  });
+
+  // Tokenize the default value on load
+  window.addEventListener('load', () => tokenize(input.value));
+
+
+  // ── Run Lab — SSE streaming ───────────────────────────────────────────────
+  const LINE_CLASSES = {
+    'Text:':   'term-line-key',
+    'Tokens:': 'term-line-token',
+    'IDs:':    'term-line-id',
+    'Count:':  'term-line-count',
+    '──':      'term-line-note',
+  };
+
+  function colorLine(raw) {
+    for (const [prefix, cls] of Object.entries(LINE_CLASSES)) {
+      if (raw.includes(prefix)) return `<span class="${cls}">${escHtml(raw)}</span>`;
+    }
+    return escHtml(raw);
+  }
+
+  function runLab() {
+    const btn    = document.getElementById('runBtn');
+    const term   = document.getElementById('terminal');
+    const body   = document.getElementById('termBody');
+    const label  = document.getElementById('termLabel');
+    // compat shim — module01 has custom terminal IDs; newer modules use lab.js
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Running…';
+    body.innerHTML = '';
+    term.classList.add('visible');
+    label.textContent = 'running…';
+
+    const es = new EventSource('/run/01');
+
+    es.onmessage = (e) => {
+      if (e.data === '__DONE__') {
+        es.close();
+        btn.disabled = false;
+        btn.textContent = '▶ Run Lab';
+        label.textContent = 'completed';
+        body.innerHTML += `\n<span class="term-done-badge">✓ script finished</span>`;
+        body.scrollTop = body.scrollHeight;
+        return;
+      }
+      const line = e.data.replace(/\\n/g, '\n');
+      body.innerHTML += colorLine(line) + '\n';
+      body.scrollTop = body.scrollHeight;
+    };
+
+    es.onerror = () => {
+      es.close();
+      btn.disabled = false;
+      btn.textContent = '▶ Run Lab';
+      label.textContent = 'error';
+      body.innerHTML += `\n<span style="color:var(--red)">Connection error — is server.py running?</span>\n`;
+    };
+  }
+</script>
+  <footer style="text-align:center;padding:24px 0 16px;font-size:12px;color:#484f58;border-top:1px solid #21262d;margin-top:40px;">Developed by Fernando Casaloti</footer>
+</body>
+</html>
