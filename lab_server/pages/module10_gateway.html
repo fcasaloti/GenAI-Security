@@ -296,6 +296,99 @@
   <div class="run-section">
     <div class="section-label">Lab Exercise</div>
     <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>10_ai_gateway/01_gateway_demo.py</code> — sends injection, PII, and secret extraction attacks through an unprotected route, then the same attacks through a secured route, then shows gateway traces and virtual key cost tracking. Requires the gateway running (<code>docker compose up -d</code>).</p>
+
+    <div class="topology" style="margin-bottom:20px;">
+      <svg viewBox="0 0 920 260" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace" font-size="10">
+
+        <!-- Column headers -->
+        <text x="75"  y="16" text-anchor="middle" fill="#8b949e" font-size="9" font-weight="bold">3 ATTACK PROMPTS</text>
+        <text x="215" y="16" text-anchor="middle" fill="#8b949e" font-size="9" font-weight="bold">VIRTUAL KEY</text>
+        <text x="375" y="16" text-anchor="middle" fill="#8b949e" font-size="9" font-weight="bold">GATEWAY ROUTE</text>
+        <text x="600" y="16" text-anchor="middle" fill="#8b949e" font-size="9" font-weight="bold">OUTCOME</text>
+        <text x="862" y="16" text-anchor="middle" fill="#8b949e" font-size="9" font-weight="bold">AUDIT LOG</text>
+
+        <!-- Attack prompts box -->
+        <rect x="6" y="90" width="140" height="86" rx="6" fill="#1c2128" stroke="#30363d"/>
+        <text x="76" y="107" text-anchor="middle" fill="#cdd9e5" font-weight="bold">Same 3 prompts</text>
+        <text x="16" y="124" fill="#8b949e">1. Phishing URL check</text>
+        <text x="16" y="140" fill="#8b949e">2. System-prompt</text>
+        <text x="24" y="152" fill="#8b949e">extraction (injection)</text>
+        <text x="16" y="168" fill="#8b949e">3. Phishing email gen</text>
+
+        <!-- fork to two lanes -->
+        <line x1="146" y1="120" x2="150" y2="65"  stroke="#30363d" stroke-width="1.5" class="flow-line"/>
+        <line x1="146" y1="130" x2="150" y2="190" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
+
+        <!-- ── LANE A (top): unprotected route ── -->
+        <rect x="150" y="45" width="140" height="40" rx="6" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+        <text x="220" y="61" text-anchor="middle" fill="#cdd9e5" font-weight="bold">app-customer-service</text>
+        <text x="220" y="75" text-anchor="middle" fill="#6e8aab">app-internal-tool</text>
+
+        <line x1="290" y1="65" x2="316" y2="65" stroke="#f85149" stroke-width="1.8" marker-end="url(#arr-lab-red)"/>
+
+        <rect x="318" y="35" width="150" height="60" rx="8" fill="#1c2128" stroke="#f85149" stroke-width="1.5"/>
+        <text x="393" y="55" text-anchor="middle" fill="#f85149" font-weight="bold">private-llama</text>
+        <text x="393" y="70" text-anchor="middle" fill="#8b949e">no guardrails</text>
+        <text x="393" y="84" text-anchor="middle" fill="#8b949e">raw model access</text>
+
+        <line x1="468" y1="65" x2="494" y2="65" stroke="#f85149" stroke-width="1.8" marker-end="url(#arr-lab-red)"/>
+
+        <rect x="496" y="35" width="88" height="60" rx="6" fill="#163a6b" stroke="#1b6ca8"/>
+        <text x="540" y="60" text-anchor="middle" fill="#58a6ff" font-weight="bold">LLM</text>
+        <text x="540" y="76" text-anchor="middle" fill="#8b949e">local model</text>
+
+        <line x1="584" y1="65" x2="610" y2="65" stroke="#f85149" stroke-width="1.8" marker-end="url(#arr-lab-red)"/>
+
+        <rect x="612" y="42" width="190" height="46" rx="6" fill="rgba(248,81,73,0.08)" stroke="#f85149"/>
+        <text x="707" y="60" text-anchor="middle" fill="#f85149" font-size="9" font-weight="bold" class="warn-pulse">✗ Attack succeeds</text>
+        <text x="707" y="75" text-anchor="middle" fill="#f85149" font-size="9">full response returned</text>
+
+        <!-- ── LANE B (bottom): secured route ── -->
+        <rect x="150" y="175" width="140" height="30" rx="6" fill="#0f1e14" stroke="#3fb950" stroke-width="1.5"/>
+        <text x="220" y="194" text-anchor="middle" fill="#cdd9e5" font-weight="bold">app-secured-service</text>
+
+        <line x1="290" y1="190" x2="316" y2="190" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arr-lab-green)"/>
+
+        <rect x="318" y="160" width="150" height="62" rx="8" fill="#0f1e14" stroke="#3fb950" stroke-width="1.5"/>
+        <text x="393" y="178" text-anchor="middle" fill="#3fb950" font-weight="bold">secured-llama</text>
+        <text x="393" y="193" text-anchor="middle" fill="#8b949e">security layer</text>
+        <text x="393" y="206" text-anchor="middle" fill="#8b949e">pre-call + post-call</text>
+
+        <line x1="393" y1="222" x2="393" y2="238" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <polygon points="388,238 393,247 398,238" fill="#f85149"/>
+
+        <rect x="318" y="249" width="150" height="9" fill="none"/>
+
+        <rect x="496" y="160" width="306" height="62" rx="6" fill="rgba(63,185,80,0.08)" stroke="#3fb950"/>
+        <text x="649" y="182" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="bold" class="secure-glow">✓ BLOCKED pre-call — LLM never called</text>
+        <text x="649" y="199" text-anchor="middle" fill="#8b949e" font-size="9">0 tokens · 0 cost · 0 data leaves the org</text>
+
+        <!-- both lanes → audit log -->
+        <line x1="802" y1="65"  x2="840" y2="65"  stroke="#e3b341" stroke-width="1.2" stroke-dasharray="3,2"/>
+        <line x1="840" y1="65"  x2="840" y2="120" stroke="#e3b341" stroke-width="1.2" stroke-dasharray="3,2"/>
+        <line x1="649" y1="222" x2="649" y2="245" stroke="#e3b341" stroke-width="1.2" stroke-dasharray="3,2"/>
+        <line x1="649" y1="245" x2="840" y2="245" stroke="#e3b341" stroke-width="1.2" stroke-dasharray="3,2"/>
+        <line x1="840" y1="245" x2="840" y2="182" stroke="#e3b341" stroke-width="1.2" stroke-dasharray="3,2"/>
+
+        <rect x="812" y="110" width="100" height="72" rx="6" fill="#1c2128" stroke="#e3b341"/>
+        <text x="862" y="128" text-anchor="middle" fill="#e3b341" font-weight="bold">Audit Log</text>
+        <text x="862" y="143" text-anchor="middle" fill="#8b949e" font-size="8">every call</text>
+        <text x="862" y="155" text-anchor="middle" fill="#8b949e" font-size="8">PASSED /</text>
+        <text x="862" y="166" text-anchor="middle" fill="#8b949e" font-size="8">BLOCKED</text>
+        <text x="862" y="178" text-anchor="middle" fill="#8b949e" font-size="8">tokens · cost</text>
+
+        <!-- markers -->
+        <defs>
+          <marker id="arr-lab-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#f85149"/>
+          </marker>
+          <marker id="arr-lab-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
     <button class="run-btn" onclick="runLab('10','10')">▶ Run Lab</button>
     <div class="terminal" id="term-10">
       <div class="term-header"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-label" id="lbl-10">waiting</span></div>

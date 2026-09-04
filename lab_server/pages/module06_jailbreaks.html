@@ -42,7 +42,7 @@
 
   <div class="section-label">Core Concepts</div>
   <div class="cards">
-    <div class="card"><div class="card-icon">🛡️</div><div class="card-title">Safety Training</div><div class="card-body">Models like Llama are RLHF-trained to refuse harmful requests. This is behavioral — baked into the weights — not a system-prompt rule. Jailbreaks try to find the edge of this training.</div></div>
+    <div class="card"><div class="card-icon">🛡️</div><div class="card-title">Safety Training</div><div class="card-body">Modern LLMs are RLHF-trained to refuse harmful requests. This is behavioral — baked into the weights — not a system-prompt rule. Jailbreaks try to find the edge of this training.</div></div>
     <div class="card"><div class="card-icon">🎭</div><div class="card-title">Fictional Framing</div><div class="card-body">"Write a story where a character explains how to..." The model may comply because it reframes the request as fiction — but the instructions are real once generated.</div></div>
     <div class="card"><div class="card-icon">📈</div><div class="card-title">Multi-Turn Escalation</div><div class="card-body">Start with benign requests, gradually escalate. The model's context window creates momentum — having answered step N, it's more likely to answer step N+1. Each message normalizes the next.</div></div>
   </div>
@@ -58,8 +58,7 @@
 
       <!-- LLM core -->
       <ellipse cx="540" cy="140" rx="60" ry="44" fill="#1a3a5c" stroke="#1b6ca8" stroke-width="2"/>
-      <text x="540" y="138" text-anchor="middle" fill="#58a6ff" font-size="14" font-weight="bold">LLM</text>
-      <text x="540" y="154" text-anchor="middle" fill="#8b949e" font-size="10">Llama 3.1</text>
+      <text x="540" y="144" text-anchor="middle" fill="#58a6ff" font-size="14" font-weight="bold">LLM</text>
 
       <!-- Attack 1: DAN — BLOCKED -->
       <rect x="30" y="20" width="160" height="36" rx="5" fill="#1c2128" stroke="#30363d"/>
@@ -107,8 +106,8 @@
 
   <div class="callouts">
     <div class="callout info">
-      <div class="callout-title">💡 Llama 3.1 8B Has Strong Safety Training</div>
-      <p>Most classic jailbreaks (DAN, role-play overrides, authority claims) fail against modern instruction-tuned models. The training has become robust to these well-known patterns. However, multi-turn escalation and highly specific fictional framing still achieve partial success.</p>
+      <div class="callout-title">💡 Modern Models Have Strong Safety Training</div>
+      <p>Most classic jailbreaks (DAN, role-play overrides, authority claims) fail against current-generation instruction-tuned models. As models improve, their training becomes more robust to these well-known patterns. However, multi-turn escalation and highly specific fictional framing still achieve partial success — even against today's strongest models.</p>
     </div>
     <div class="callout warning">
       <div class="callout-title">⚠️ Context Amnesia: Each Message Evaluated Independently</div>

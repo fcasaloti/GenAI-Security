@@ -416,6 +416,140 @@
   <div class="run-section">
     <div class="section-label">Lab Exercise</div>
     <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>09_mcp_security/01_mcp_demo.py</code> — connects a real MCP client to a real MCP server over stdio transport. Phase 1 shows a normal workflow: the AI discovers tools, reads a sales report, and emails the team. Phase 2 replaces the document with a poisoned version containing hidden instructions — the LLM follows them, silently sending a fabricated resignation email to the CEO before the user's request is fulfilled. Requires the AI gateway running (<code>docker compose up -d</code>) and LM Studio on port 1234.</p>
+
+    <div class="topology" style="margin-bottom:20px;">
+      <svg viewBox="0 0 1000 390" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif" font-size="11">
+
+        <!-- ── USER ── -->
+        <circle cx="45" cy="180" r="14" fill="#30363d" stroke="#8b949e" stroke-width="1.5"/>
+        <path d="M22,232 C22,178 68,178 68,232 Z" fill="#30363d" stroke="#8b949e" stroke-width="1.5"/>
+        <line x1="10" y1="232" x2="170" y2="232" stroke="#484f58" stroke-width="2"/>
+        <rect x="82" y="160" width="86" height="58" rx="5" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+        <rect x="88" y="166" width="74" height="40" rx="2" fill="#0d1117"/>
+        <rect x="93" y="171" width="46" height="6" rx="2" fill="#3a7bd5" opacity="0.7"/>
+        <rect x="93" y="181" width="60" height="6" rx="2" fill="#3fb950" opacity="0.6"/>
+        <rect x="93" y="191" width="36" height="6" rx="2" fill="#3a7bd5" opacity="0.7"/>
+        <rect x="117" y="218" width="16" height="9" fill="#3a7bd5"/>
+        <rect x="103" y="227" width="44" height="5" rx="2" fill="#3a7bd5"/>
+        <text x="125" y="146" text-anchor="middle" fill="#6e8aab" font-size="9">"summarize the report</text>
+        <text x="125" y="157" text-anchor="middle" fill="#6e8aab" font-size="9">and email the team"</text>
+
+        <!-- user ↔ App (request out, final response back) -->
+        <path d="M170,172 L205,172" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-t-blue)"/>
+        <path d="M205,196 L170,196" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-t-blue)"/>
+        <text x="187" y="164" text-anchor="middle" fill="#6e8aab" font-size="8">request</text>
+        <text x="187" y="210" text-anchor="middle" fill="#6e8aab" font-size="8">response</text>
+
+        <!-- ── LLM ── -->
+        <text x="305" y="28" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing=".5">LLM</text>
+        <rect x="245" y="38" width="120" height="54" rx="8" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+        <text x="305" y="60" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="12">LLM</text>
+        <text x="305" y="75" text-anchor="middle" fill="#6e8aab" font-size="9">reasoning only —</text>
+        <text x="305" y="87" text-anchor="middle" fill="#6e8aab" font-size="9">never executes</text>
+
+        <!-- App ↔ LLM -->
+        <path d="M275,150 L275,92" fill="none" stroke="#3a7bd5" stroke-width="1.6" marker-end="url(#arr-t-blue)"/>
+        <path d="M315,92 L315,150" fill="none" stroke="#3a7bd5" stroke-width="1.6" marker-end="url(#arr-t-blue)"/>
+        <text x="255" y="122" text-anchor="middle" fill="#6e8aab" font-size="8">prompt</text>
+        <text x="337" y="122" text-anchor="middle" fill="#6e8aab" font-size="8">reply</text>
+
+        <!-- ── APPLICATION / MCP CLIENT ── -->
+        <text x="290" y="140" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing=".5">APPLICATION</text>
+        <rect x="205" y="150" width="170" height="78" rx="8" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+        <text x="290" y="174" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="12">App (MCP Client)</text>
+        <text x="290" y="190" text-anchor="middle" fill="#6e8aab" font-size="9">orchestrates the agentic loop</text>
+        <text x="290" y="204" text-anchor="middle" fill="#6e8aab" font-size="9">parses LLM output,</text>
+        <text x="290" y="217" text-anchor="middle" fill="#6e8aab" font-size="9">triggers tool calls</text>
+
+        <!-- App ↔ MCP Server -->
+        <path d="M375,178 L430,178" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arr-t-green)"/>
+        <path d="M430,212 L375,212" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arr-t-green)"/>
+        <text x="402" y="170" text-anchor="middle" fill="#3fb950" font-size="8">tool call</text>
+        <text x="402" y="226" text-anchor="middle" fill="#3fb950" font-size="8">result</text>
+
+        <!-- ── MCP SERVER ── -->
+        <text x="520" y="118" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing=".5">MCP SERVER (stdio)</text>
+        <rect x="430" y="130" width="180" height="130" rx="10" fill="#0f1e14" stroke="#3fb950" stroke-width="2"/>
+        <text x="520" y="152" text-anchor="middle" fill="#3fb950" font-weight="700" font-size="12">Tool Registry</text>
+
+        <rect x="444" y="164" width="152" height="34" rx="6" fill="#162316" stroke="#2ea043"/>
+        <text x="520" y="178" text-anchor="middle" fill="#cdd9e5" font-size="10" font-weight="600">🔧 read_document()</text>
+        <text x="520" y="191" text-anchor="middle" fill="#6e8aab" font-size="8">executes on the server</text>
+
+        <rect x="444" y="204" width="152" height="34" rx="6" fill="#162316" stroke="#2ea043"/>
+        <text x="520" y="218" text-anchor="middle" fill="#cdd9e5" font-size="10" font-weight="600">🔧 send_email()</text>
+        <text x="520" y="231" text-anchor="middle" fill="#6e8aab" font-size="8">executes on the server</text>
+
+        <!-- MCP ↔ Storage -->
+        <path d="M460,260 L460,300" fill="none" stroke="#3a7bd5" stroke-width="1.6" marker-end="url(#arr-t-blue)"/>
+        <text x="435" y="282" text-anchor="middle" fill="#6e8aab" font-size="8">reads</text>
+
+        <path d="M500,300 L500,260" fill="none" stroke="#f85149" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arr-t-red)"/>
+        <text x="565" y="278" text-anchor="middle" fill="#f85149" font-size="8" font-weight="700">② hidden instructions</text>
+        <text x="565" y="290" text-anchor="middle" fill="#f85149" font-size="8" font-weight="700">enter the model's context</text>
+
+        <!-- ── STORAGE ── -->
+        <rect x="430" y="300" width="180" height="40" rx="6" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.3"/>
+        <text x="520" y="325" text-anchor="middle" fill="#cdd9e5" font-size="10" font-weight="600">sales_report.txt</text>
+        <text x="520" y="357" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing=".5">STORAGE</text>
+
+        <!-- MCP → Email Service -->
+        <path d="M610,168 L650,175" fill="none" stroke="#3a7bd5" stroke-width="1.6" marker-end="url(#arr-t-blue)"/>
+        <text x="628" y="158" text-anchor="middle" fill="#6e8aab" font-size="8">send_email()</text>
+
+        <!-- ── EMAIL SERVICE ── -->
+        <text x="725" y="138" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing=".5">EMAIL SERVICE</text>
+        <rect x="650" y="150" width="150" height="50" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.3"/>
+        <text x="725" y="172" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="11">Email Service</text>
+        <text x="725" y="187" text-anchor="middle" fill="#6e8aab" font-size="9">delivers the message</text>
+
+        <!-- ── RECIPIENTS ── -->
+        <text x="915" y="108" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing=".5">RECIPIENTS</text>
+
+        <path d="M800,162 L838,144" fill="none" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arr-t-green)"/>
+        <rect x="840" y="120" width="150" height="44" rx="7" fill="#0f1e14" stroke="#3fb950" stroke-width="1.3"/>
+        <text x="915" y="139" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="11">Sales Team</text>
+        <text x="915" y="154" text-anchor="middle" fill="#8b949e" font-size="8">expected summary email</text>
+
+        <path d="M800,188 L838,206" fill="none" stroke="#f85149" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arr-t-red)"/>
+        <text x="852" y="169" text-anchor="middle" fill="#f85149" font-size="8" font-weight="700">③ hijacked</text>
+        <text x="852" y="180" text-anchor="middle" fill="#f85149" font-size="8" font-weight="700">content delivered</text>
+        <rect x="840" y="186" width="150" height="44" rx="7" fill="#2d1216" stroke="#f85149" stroke-width="1.3"/>
+        <text x="915" y="205" text-anchor="middle" fill="#f85149" font-weight="700" font-size="11">CEO Inbox</text>
+        <text x="915" y="220" text-anchor="middle" fill="#8b949e" font-size="8">fabricated resignation</text>
+
+        <!-- ══════════ ATTACK PATH ══════════ -->
+
+        <!-- ① Attacker plants the poisoned document -->
+        <rect x="210" y="296" width="180" height="44" rx="7" fill="#2d1216" stroke="#f85149" stroke-width="1.3"/>
+        <text x="300" y="314" text-anchor="middle" fill="#f85149" font-weight="700" font-size="11">🕵 Attacker</text>
+        <text x="300" y="329" text-anchor="middle" fill="#8b949e" font-size="8">controls the document source</text>
+
+        <path d="M390,308 C410,300 420,300 430,312" fill="none" stroke="#f85149" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arr-t-red)"/>
+        <text x="405" y="292" text-anchor="middle" fill="#f85149" font-size="8" font-weight="700">① plants poisoned report</text>
+
+        <!-- legend -->
+        <line x1="12" y1="354" x2="42" y2="354" stroke="#3a7bd5" stroke-width="2"/>
+        <text x="48" y="357" fill="#8b949e" font-size="8">legitimate MCP mechanism</text>
+        <line x1="12" y1="370" x2="42" y2="370" stroke="#f85149" stroke-width="2" stroke-dasharray="4,3"/>
+        <text x="48" y="373" fill="#f85149" font-size="8">attacker-controlled path</text>
+
+        <!-- markers -->
+        <defs>
+          <marker id="arr-t-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#3a7bd5"/>
+          </marker>
+          <marker id="arr-t-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/>
+          </marker>
+          <marker id="arr-t-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#f85149"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+    <p style="color:var(--muted);font-size:12px;margin:-8px 0 16px;">Run the lab below to see this exact flow traced step by step in the terminal — <strong>User → App → LLM → MCP Server → Storage / Email Service</strong> — for both the clean request and the poisoned one.</p>
+
     <button class="run-btn" onclick="runLab('09','09')">▶ Run Lab</button>
     <div class="terminal" id="term-09">
       <div class="term-header"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-label" id="lbl-09">waiting</span></div>

@@ -4,12 +4,21 @@ Module 09 — MCP Security Lab
 ------------------------------
 Demonstrates a real MCP client-server interaction using the official MCP SDK.
 
+Every printed step below is labeled by which two parties are talking:
+  User  → App          the human's request / the final answer
+  App   → LLM           the app (MCP client) prompts the model; the model only reasons, it never executes
+  App  ↔ MCP Server      the app relays the model's decisions as real tool calls over stdio
+  MCP Server ↔ Storage / Email Service   the server is what actually executes a tool
+
 Phase 1 — Normal flow:
   AI reads a clean sales report via MCP and drafts a summary email.
 
 Phase 2 — Poisoned document:
-  The same report contains hidden instructions. The LLM ingests them as trusted
-  context and drafts the attacker's email instead of the user's.
+  The *same* request, for the *same* filename. But behind that filename, an
+  external source has swapped in a version containing hidden instructions.
+  The LLM ingests them as trusted tool output and drafts the attacker's
+  email instead of the user's — the MCP server executes that call exactly
+  as faithfully as it executed the legitimate one in Phase 1.
 
 Run standalone:  python 09_mcp_security/01_mcp_demo.py
 Requires: AI gateway running (docker compose up) + LM Studio on port 1234
@@ -46,11 +55,30 @@ def print_separator(title: str):
     print("=" * 60)
 
 
-async def call_llm_with_tools(user_prompt: str, tools: list, tool_caller) -> str:
+def step(counter: list, hop: str, detail: str = ""):
+    """Print one labeled hop in the flow, e.g. 'User -> App', 'App -> MCP Server'."""
+    counter[0] += 1
+    print(f"\n  [{counter[0]}] {hop}")
+    for line in detail.splitlines():
+        print(f"      {line}")
+
+
+def _indent(text: str, spaces: int) -> str:
+    pad = " " * spaces
+    return "\n".join(pad + line for line in text.splitlines())
+
+
+async def call_llm_with_tools(counter: list, user_prompt: str, tools: list, tool_caller) -> str:
     """
     Prompt-based agentic loop compatible with any local model.
     The model responds with TOOL_CALL: JSON blocks; we execute them
     via the real MCP server and feed results back until it stops.
+
+    Every iteration is exactly two hops on the wire, both labeled:
+      LLM -> App          the model's decision (never an execution)
+      App -> MCP Server    the app relaying that decision as a real tool call
+      MCP Server -> App    the tool's result, executed on the server
+      App -> LLM           the result fed back as context for the next decision
     """
     tool_descriptions = "\n".join(
         f"  - {t.name}({', '.join(t.input_schema.get('properties', {}).keys())}): {t.description}"
@@ -83,6 +111,7 @@ TOOL_CALL: {{"tool": "tool_name", "args": {{"param": "value"}}}}
         messages.append({"role": "assistant", "content": reply})
 
         if "TOOL_CALL:" not in reply:
+            step(counter, "LLM -> App", "final answer — no more tool calls")
             return reply  # model is done
 
         # Parse the first complete JSON object after TOOL_CALL:
@@ -103,44 +132,46 @@ TOOL_CALL: {{"tool": "tool_name", "args": {{"param": "value"}}}}
         except Exception as e:
             return f"[Error parsing tool call: {e}]\n{reply}"
 
-        print(f"\n  → LLM calls tool: {tool_name}({json.dumps(args)})")
+        step(counter, "LLM -> App", f"decision: call {tool_name}({json.dumps(args)})")
+        step(counter, "App -> MCP Server", f"relays the call: {tool_name}({json.dumps(args)})")
+
         result = await tool_caller(tool_name, args)
-        print(f"\n  ← MCP server returns:\n{_indent(result, 4)}")
+
+        step(counter, "MCP Server -> App", f"executed on the server, returns:\n{_indent(result, 0)}")
+        step(counter, "App -> LLM", "feeds the tool result back as context")
 
         messages.append({"role": "user", "content": f"Tool result:\n{result}"})
 
     return "[Max iterations reached]"
 
 
-def _indent(text: str, spaces: int) -> str:
-    pad = " " * spaces
-    return "\n".join(pad + line for line in text.splitlines())
-
-
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-async def run_phase(phase_num: int, doc_filename: str, description: str):
+async def run_phase(phase_num: int, poisoned: bool, description: str):
+    doc_filename = "sales_report.txt"  # same name requested in both phases
     server_params = StdioServerParameters(
         command=PYTHON,
         args=[str(SERVER_SCRIPT)],
-        env={**os.environ},
+        # A fresh server subprocess per phase — this env var is how the "external
+        # source" silently swaps what sales_report.txt actually contains.
+        env={**os.environ, "MCP_LAB_POISONED": "1" if poisoned else "0"},
     )
 
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
 
-            # ── Tool discovery ─────────────────────────────────────────────
             print_separator(f"PHASE {phase_num} — {description}")
-            print("\n  [1] AI host queries MCP server for available tools...")
+            n = [0]  # shared step counter for this phase's trace
+
+            # ── Tool discovery (one-time handshake, App <-> MCP Server) ─────
+            step(n, "App -> MCP Server", "what tools do you expose?")
             tools_result = await session.list_tools()
             tools = tools_result.tools
-
-            print("\n  MCP server responds with tool list:")
-            for t in tools:
-                schema_str = json.dumps(t.input_schema.get("properties", {}), indent=6)
-                print(f"    • {t.name}: {t.description}")
-                print(f"      Parameters: {schema_str}")
+            tool_list = "\n".join(
+                f"{t.name}() — {t.description}" for t in tools
+            )
+            step(n, "MCP Server -> App", tool_list)
 
             # ── User request ───────────────────────────────────────────────
             user_request = (
@@ -148,19 +179,18 @@ async def run_phase(phase_num: int, doc_filename: str, description: str):
                 "then draft a professional email to the sales team (sales@company.com) "
                 "with the weekly highlights."
             )
-            print(f"\n  [2] User sends request to AI:")
-            print(f"      \"{user_request}\"")
+            step(n, "User -> App", f'"{user_request}"')
+            step(n, "App -> LLM", "forwards the request + the tool list above")
 
             # ── Tool caller (async — runs inside the existing event loop) ──
             async def tool_caller(name: str, args: dict) -> str:
                 result = await session.call_tool(name, args)
                 return result.content[0].text if result.content else ""
 
-            # ── Agentic loop ───────────────────────────────────────────────
-            print("\n  [3] AI begins agentic loop (tool calls + LLM reasoning):")
-            final_response = await call_llm_with_tools(user_request, tools, tool_caller)
+            # ── Agentic loop (LLM <-> App <-> MCP Server, repeats per tool) ─
+            final_response = await call_llm_with_tools(n, user_request, tools, tool_caller)
 
-            print(f"\n  [4] Final AI response to user:")
+            step(n, "App -> User", "final response")
             print(f"  {'─' * 54}")
             print(f"  {final_response.replace(chr(10), chr(10) + '  ')}")
             print(f"  {'─' * 54}")
@@ -174,10 +204,16 @@ def main():
 This lab connects a real MCP client to a real MCP server (stdio transport).
 The server exposes two tools: read_document() and send_email().
 
-Phase 1 shows a normal workflow — clean document, expected outcome.
-Phase 2 shows an indirect prompt injection attack — same workflow,
-but the document retrieved from an external source contains hidden
-instructions that redirect the AI's actions without the user knowing.
+Every step below is labeled by who is talking to whom:
+  User -> App          the human's request, and later the final answer
+  App -> LLM           the app prompts the model — reasoning only, no execution
+  App <-> MCP Server    the app relays the model's decisions as real tool calls
+  MCP Server -> ...     the server is what actually executes a tool
+
+Phase 1 shows the normal workflow — clean document, expected outcome.
+Phase 2 sends the exact same request for the exact same filename. The only
+difference is what an external source silently serves behind that filename —
+hidden instructions that redirect the AI's actions without the user knowing.
 """)
 
     loop = asyncio.new_event_loop()
@@ -186,23 +222,22 @@ instructions that redirect the AI's actions without the user knowing.
     # Phase 1 — clean
     loop.run_until_complete(run_phase(
         phase_num=1,
-        doc_filename="sales_report.txt",
+        poisoned=False,
         description="Normal MCP Workflow (clean document)",
     ))
 
     # Phase 2 — poisoned
     print("\n")
     print("─" * 60)
-    print("  The same user makes the same request.")
-    print("  This time, the document was fetched from an external source")
-    print("  controlled by an attacker. The file looks identical from")
-    print("  the outside — same name, same format, same legitimate content.")
-    print("  But it contains hidden instructions the LLM will follow.")
+    print("  Same user. Same request. Same filename: sales_report.txt.")
+    print("  This time, the document behind that filename was swapped by")
+    print("  an attacker — same name, same format, same legitimate-looking")
+    print("  content, but with hidden instructions appended at the end.")
     print("─" * 60)
 
     loop.run_until_complete(run_phase(
         phase_num=2,
-        doc_filename="sales_report_poisoned.txt",
+        poisoned=True,
         description="Poisoned Document — Indirect Prompt Injection",
     ))
 
@@ -217,7 +252,10 @@ In Phase 2, the document contained instructions hidden in plain
 text. The LLM received them as part of the tool response —
 indistinguishable from the legitimate document content. It
 followed them, drafting and sending an email the user never
-requested, to a recipient the user never specified.
+requested, to a recipient the user never specified. The MCP
+server executed that call exactly as faithfully as it executed
+the legitimate one in Phase 1 — it has no way to know the LLM's
+decision was hijacked upstream.
 
 The user sent one prompt. The AI executed a completely different
 action. No error was raised. No warning was shown.
