@@ -22,11 +22,15 @@ services:
     container_name: open-webui
     ports:
       - "3000:8080"
+    volumes:
+      - open-webui-data:/app/backend/data
     environment:
-      # Primary: LiteLLM gateway (secured-llama + private-llama)
       - 'OPENAI_API_BASE_URL=http://litellm:4000/v1'
       - OPENAI_API_KEY=${LITELLM_MASTER_KEY}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
       - litellm
+
+volumes:
+  open-webui-data:

@@ -1,26 +1,29 @@
 model_list:
-  # 🔒 SECURED: Safety system prompt injected by the gateway
   - model_name: secured-llama
     litellm_params:
       model: openai/meta-llama-3.1-8b-instruct
-      api_base: "http://host.docker.internal:1234/v1"
+      api_base: "http://192.168.0.219:1234/v1"
       api_key: "not-needed"
-      guardrails: ["runtime-security-guard"]
+      guardrails: ["LlamaProfile"]
+      drop_params: true
+    model_info:
+      supports_function_calling: false
 
-  # 🔓 PRIVATE: 100% Local — no gateway-level controls
   - model_name: private-llama
     litellm_params:
       model: openai/meta-llama-3.1-8b-instruct
-      api_base: "http://host.docker.internal:1234/v1"
+      api_base: "http://192.168.0.219:1234/v1"
       api_key: "not-needed"
-      # NO guardrails — raw model access
+      drop_params: true
+    model_info:
+      supports_function_calling: false
 
 general_settings:
   disable_spend_logs: true
   disable_reset_budget: true
 
 guardrails:
-  - guardrail_name: "runtime-security-guard"
+  - guardrail_name: "LlamaProfile"
     litellm_params:
       guardrail: "panw_prisma_airs"
       mode: ["pre_call", "post_call"]
