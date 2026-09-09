@@ -2,23 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Module 10 — AI Gateway | GenAI App Security</title>
+  <title>Module 10 — AI Model Supply Chain | GenAI App Security</title>
   <link rel="stylesheet" href="/static/base.css" />
   <style>
-    .flow-line { stroke-dasharray:6 4; animation:dash 1s linear infinite; }
-    @keyframes dash { to { stroke-dashoffset:-20; } }
-    @keyframes warn-pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
-    .warn-pulse { animation: warn-pulse 2.5s ease-in-out infinite; }
-    @keyframes secure-glow { 0%,100%{opacity:0.5} 50%{opacity:1} }
-    .secure-glow { animation: secure-glow 2s ease-in-out infinite; }
+    @keyframes dash       { to { stroke-dashoffset:-20; } }
+    @keyframes risk-pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+    .flow-line   { stroke-dasharray:6 4; animation:dash 1.2s linear infinite; }
+    .risk-pulse  { animation:risk-pulse 2.5s ease-in-out infinite; }
     .section-divider { border:none; border-top:1px solid #21262d; margin:36px 0; }
+
+    .risk-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; margin-top:16px; }
+    .risk-card { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:16px; }
+    .risk-card.high   { border-left:3px solid #f85149; }
+    .risk-card.medium { border-left:3px solid #e3b341; }
+    .risk-num   { font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+    .risk-title { font-size:13px; font-weight:700; color:#cdd9e5; margin-bottom:6px; }
+    .risk-body  { font-size:12px; color:#8b949e; line-height:1.6; }
+
+    .topology   { background:#0d1117; border:1px solid #21262d; border-radius:10px; padding:20px; margin:16px 0 24px; overflow-x:auto; }
+    .topology svg { display:block; min-width:640px; width:100%; }
   </style>
 </head>
 <body>
 <nav>
   <span class="nav-logo">GenAI App Security Lab</span>
   <span class="nav-sep">/</span>
-  <span class="nav-crumb">Module 10 — AI Gateway</span>
+  <span class="nav-crumb">Module 10 — AI Model Supply Chain</span>
   <div class="nav-modules">
     <a class="nav-mod-link" href="/">Home</a>
     <a class="nav-mod-link" href="/module/01">01</a>
@@ -31,381 +40,333 @@
     <a class="nav-mod-link" href="/module/08">08</a>
     <a class="nav-mod-link" href="/module/09">09</a>
     <a class="nav-mod-link active" href="/module/10">10</a>
-    <a class="nav-mod-link" href="/module/11">11</a>
     <a class="nav-mod-link" href="/module/rw">Real World</a>
   </div>
 </nav>
+
 <div class="page">
   <div class="module-badge">Module 10</div>
-  <h1 class="module-title">AI Gateway</h1>
-  <p class="module-subtitle">Getting a model to work is the easy part. Running it reliably in production — across teams, environments, and multiple providers — is where the real complexity begins. As AI adoption matures, organizations need a centralized layer to manage traffic, control costs, enforce policy, and maintain visibility. That layer is the AI gateway.</p>
+  <h1 class="module-title">AI Model Supply Chain</h1>
+  <p class="module-subtitle">Not every AI risk comes from a chatbot. Developers also embed specialized AI models directly into their products — models that process your company's files, audio, images, and documents. These models are downloaded from public websites by individual developers, integrated in hours, and deployed to production without any security review. Most security teams have no idea they exist.</p>
 
-  <!-- ── DIAGRAM 1: What is an AI Gateway ── -->
-  <div class="section-label">What is an Enterprise AI Gateway?</div>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:8px;">An enterprise AI gateway is a routing and control layer that sits between your internal applications and external LLM providers. All model traffic passes through it — giving you one place to handle authentication, enforce rate limits, track costs, route to the right provider, and log every interaction for compliance.</p>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">It serves a similar role to an API gateway, but AI workloads introduce constraints that traditional gateways weren't designed for: token-based billing, non-deterministic outputs, provider-specific APIs, and the need to scan content in both directions.</p>
+  <!-- ── DIAGRAM 1: The supply chain ── -->
+  <div class="section-label">How Developers Source Specialized AI Models</div>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:8px;">A developer building a product feature needs an AI model that performs one specific job — separating audio tracks, reading invoices, recognizing faces. They search a public website, pick a model, download it, and ship it to production. The whole process can take a few hours. No security team is involved at any step.</p>
 
   <div class="topology">
-    <svg viewBox="0 0 820 230" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif" font-size="11">
-
-      <!-- ── LEFT COLUMN: Enterprise Application Layer ── -->
-      <text x="90" y="18" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing="0.5">ENTERPRISE APPLICATION LAYER</text>
-
-      <!-- App boxes -->
-      <rect x="10" y="32"  width="160" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
-      <text x="90" y="50"  text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">App 1</text>
-      <text x="90" y="65"  text-anchor="middle" fill="#6e8aab" font-size="10">(Customer Portal)</text>
-
-      <rect x="10" y="84"  width="160" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
-      <text x="90" y="102" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">App 2</text>
-      <text x="90" y="117" text-anchor="middle" fill="#6e8aab" font-size="10">(Internal Tooling)</text>
-
-      <rect x="10" y="136" width="160" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
-      <text x="90" y="154" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">App 3</text>
-      <text x="90" y="169" text-anchor="middle" fill="#6e8aab" font-size="10">(AI Copilot)</text>
-
-      <!-- ── ARROWS: apps → gateway ── -->
-      <!-- curved paths converging to gateway left edge (x=230, y=115) -->
-      <path d="M172,52 C200,52 215,115 230,115"  fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-      <path d="M172,104 C205,104 218,115 230,115" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-      <path d="M172,156 C200,156 215,115 230,115" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-
-      <!-- ── CENTER: Enterprise AI Gateway ── -->
-      <text x="380" y="18" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing="0.5">ENTERPRISE AI GATEWAY</text>
-      <rect x="232" y="28" width="296" height="180" rx="10" fill="#0f1e14" stroke="#3fb950" stroke-width="2"/>
-
-      <!-- Feature rows -->
-      <rect x="248" y="44"  width="264" height="34" rx="6" fill="#162316" stroke="#2ea043" stroke-width="1"/>
-      <text x="275" y="65"  fill="#3fb950" font-size="16">🔒</text>
-      <text x="300" y="66"  fill="#cdd9e5" font-size="12" font-weight="500">Authentication &amp; Security</text>
-
-      <rect x="248" y="84"  width="264" height="34" rx="6" fill="#162316" stroke="#2ea043" stroke-width="1"/>
-      <text x="275" y="105" fill="#3fb950" font-size="16">💰</text>
-      <text x="300" y="106" fill="#cdd9e5" font-size="12" font-weight="500">Budget &amp; Rate Controls</text>
-
-      <rect x="248" y="124" width="264" height="34" rx="6" fill="#162316" stroke="#2ea043" stroke-width="1"/>
-      <text x="275" y="145" fill="#3fb950" font-size="16">⇄</text>
-      <text x="300" y="146" fill="#cdd9e5" font-size="12" font-weight="500">Intelligent Routing &amp; Failover</text>
-
-      <rect x="248" y="164" width="264" height="34" rx="6" fill="#162316" stroke="#2ea043" stroke-width="1"/>
-      <text x="275" y="185" fill="#3fb950" font-size="16">🔍</text>
-      <text x="300" y="186" fill="#cdd9e5" font-size="12" font-weight="500">Observability &amp; Logging</text>
-
-      <!-- ── ARROWS: gateway → providers ── -->
-      <path d="M530,75  C560,75  575,55  590,55"  fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-      <path d="M530,105 C558,105 572,100 590,100" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-      <path d="M530,145 C558,145 572,148 590,148" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-      <path d="M530,175 C560,175 575,195 590,195" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-
-      <!-- ── RIGHT COLUMN: External LLM Provider Layer ── -->
-      <text x="700" y="18" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing="0.5">EXTERNAL LLM PROVIDER LAYER</text>
-
-      <rect x="592" y="35"  width="218" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
-      <text x="701" y="53"  text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">LLM Provider A</text>
-      <text x="701" y="68"  text-anchor="middle" fill="#6e8aab" font-size="10">(e.g., OpenAI)</text>
-
-      <rect x="592" y="82"  width="218" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
-      <text x="701" y="100" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">LLM Provider B</text>
-      <text x="701" y="115" text-anchor="middle" fill="#6e8aab" font-size="10">(e.g., Anthropic)</text>
-
-      <rect x="592" y="129" width="218" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
-      <text x="701" y="147" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">LLM Provider C</text>
-      <text x="701" y="162" text-anchor="middle" fill="#6e8aab" font-size="10">(e.g., Gemini)</text>
-
-      <rect x="592" y="176" width="218" height="40" rx="7" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
-      <text x="701" y="194" text-anchor="middle" fill="#cdd9e5" font-weight="600" font-size="12">LLM Provider D</text>
-      <text x="701" y="209" text-anchor="middle" fill="#6e8aab" font-size="10">(e.g., Mistral)</text>
-
-      <!-- Arrow markers -->
+    <svg viewBox="0 0 860 340" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif" font-size="11">
       <defs>
-        <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L8,3 z" fill="#3a7bd5"/>
-        </marker>
+        <marker id="arr-b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3a7bd5"/></marker>
+        <marker id="arr-r" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f85149"/></marker>
       </defs>
+
+      <!-- ── STEP 1: Hugging Face ── -->
+      <text x="90" y="90" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing="0.5">① PUBLIC MODEL LIBRARY</text>
+      <rect x="10" y="100" width="160" height="140" rx="10" fill="#0d1117" stroke="#3a7bd5" stroke-width="2"/>
+      <text x="90" y="126" text-anchor="middle" fill="#3a7bd5" font-size="22">🤗</text>
+      <text x="90" y="148" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="13">Hugging Face</text>
+      <text x="90" y="164" text-anchor="middle" fill="#8b949e" font-size="10">Public model website</text>
+      <line x1="28" y1="176" x2="152" y2="176" stroke="#21262d" stroke-width="1"/>
+      <text x="90" y="193" text-anchor="middle" fill="#8b949e" font-size="10">900,000+ models</text>
+      <text x="90" y="210" text-anchor="middle" fill="#8b949e" font-size="10">Anyone can upload</text>
+      <text x="90" y="227" text-anchor="middle" fill="#8b949e" font-size="10">No security screening</text>
+
+      <!-- ARROW 1 → 2 -->
+      <line x1="172" y1="170" x2="228" y2="170" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-b)" stroke-dasharray="6 4" class="flow-line"/>
+      <text x="200" y="162" text-anchor="middle" fill="#8b949e" font-size="9">search</text>
+      <text x="200" y="183" text-anchor="middle" fill="#8b949e" font-size="9">&amp; select</text>
+
+      <!-- ── STEP 2: Developer ── -->
+      <text x="310" y="90" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing="0.5">② DEVELOPER PICKS A MODEL</text>
+      <rect x="230" y="100" width="160" height="140" rx="10" fill="#0d1117" stroke="#3a7bd5" stroke-width="2"/>
+      <text x="310" y="126" text-anchor="middle" fill="#3a7bd5" font-size="22">👨‍💻</text>
+      <text x="310" y="148" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="13">Developer</text>
+      <text x="310" y="164" text-anchor="middle" fill="#8b949e" font-size="10">Checks if it works</text>
+      <line x1="248" y1="176" x2="372" y2="176" stroke="#21262d" stroke-width="1"/>
+      <text x="310" y="193" text-anchor="middle" fill="#8b949e" font-size="10">Tests accuracy</text>
+      <text x="310" y="210" text-anchor="middle" fill="#e3b341" font-size="10">No security check</text>
+      <text x="310" y="227" text-anchor="middle" fill="#e3b341" font-size="10">No origin check</text>
+
+      <!-- ARROW 2 → 3 -->
+      <line x1="392" y1="170" x2="448" y2="170" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-b)" stroke-dasharray="6 4" class="flow-line"/>
+      <text x="420" y="162" text-anchor="middle" fill="#8b949e" font-size="9">download &amp;</text>
+      <text x="420" y="183" text-anchor="middle" fill="#8b949e" font-size="9">add to code</text>
+
+      <!-- ── STEP 3: Integration ── -->
+      <text x="530" y="90" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing="0.5">③ ADDED TO THE APP</text>
+      <rect x="450" y="100" width="160" height="140" rx="10" fill="#0d1117" stroke="#3a7bd5" stroke-width="2"/>
+      <text x="530" y="126" text-anchor="middle" fill="#3a7bd5" font-size="22">📦</text>
+      <text x="530" y="148" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="13">Codebase</text>
+      <text x="530" y="164" text-anchor="middle" fill="#8b949e" font-size="10">Added as a dependency</text>
+      <line x1="468" y1="176" x2="592" y2="176" stroke="#21262d" stroke-width="1"/>
+      <text x="530" y="193" text-anchor="middle" fill="#8b949e" font-size="10">Listed in requirements</text>
+      <text x="530" y="210" text-anchor="middle" fill="#e3b341" font-size="10">No weight scanning</text>
+      <text x="530" y="227" text-anchor="middle" fill="#e3b341" font-size="10">No isolation</text>
+
+      <!-- ARROW 3 → 4 -->
+      <line x1="612" y1="170" x2="668" y2="170" stroke="#f85149" stroke-width="1.8" marker-end="url(#arr-r)" stroke-dasharray="6 4" class="flow-line"/>
+      <text x="640" y="162" text-anchor="middle" fill="#f85149" font-size="9">ships to</text>
+      <text x="640" y="183" text-anchor="middle" fill="#f85149" font-size="9">production</text>
+
+      <!-- ── STEP 4: Production ── -->
+      <text x="760" y="90" text-anchor="middle" fill="#f85149" font-size="10" font-weight="600" letter-spacing="0.5">④ LIVE — RISK LANDS HERE</text>
+      <rect x="670" y="100" width="180" height="140" rx="10" fill="#1a0a0a" stroke="#f85149" stroke-width="2"/>
+      <text x="760" y="126" text-anchor="middle" fill="#f85149" font-size="22">🏭</text>
+      <text x="760" y="148" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="13">Production</text>
+      <text x="760" y="164" text-anchor="middle" fill="#8b949e" font-size="10">Processes real data</text>
+      <line x1="688" y1="176" x2="832" y2="176" stroke="#21262d" stroke-width="1"/>
+      <text x="760" y="193" text-anchor="middle" fill="#8b949e" font-size="10">Customer files</text>
+      <text x="760" y="210" text-anchor="middle" fill="#8b949e" font-size="10">Internal documents</text>
+      <text x="760" y="227" text-anchor="middle" fill="#f85149" font-size="10">Unvetted model runs here</text>
+
+      <!-- Bottom warning banner -->
+      <rect x="10" y="265" width="840" height="58" rx="8" fill="#1a0a0a" stroke="#f85149" stroke-width="1" opacity="0.8"/>
+      <text x="430" y="287" text-anchor="middle" fill="#f85149" font-size="11" font-weight="700">⚠  No security checkpoint exists between steps ① and ④ by default</text>
+      <text x="430" y="308" text-anchor="middle" fill="#8b949e" font-size="11">The model running on your production data was uploaded by a stranger, tested only for accuracy, and never scanned for malicious behavior.</text>
     </svg>
   </div>
 
-  <hr class="section-divider"/>
-
-  <!-- ── Why enterprises need a gateway ── -->
-  <div class="section-label">Why Do Enterprises Need an AI Gateway?</div>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">Production AI systems tend to fail at the infrastructure layer, not the model layer. Here are the five drivers that consistently push teams toward a dedicated gateway:</p>
+  <!-- ── What are specialized models ── -->
+  <div class="section-label">What Makes a Specialized AI Model Different</div>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">A general-purpose AI model like ChatGPT handles broad tasks through a cloud API that security teams can monitor. A specialized AI model is built for one specific job, runs inside your own servers, and communicates with no external API. That makes it completely invisible to most security controls.</p>
   <div class="cards">
     <div class="card">
-      <div class="card-icon">⚡</div>
-      <div class="card-title">Resilience Across Providers</div>
-      <div class="card-body">A single provider dependency means a single point of failure. When a provider has an outage or degrades, traffic should automatically shift to an available alternative. Without a gateway, that logic gets duplicated — or skipped — in every application.</div>
+      <div class="card-icon">🎵</div>
+      <div class="card-title">Audio Processing</div>
+      <div class="card-body">Models that separate music tracks, remove background noise, transcribe speech, or identify speakers. They process raw audio files that users upload — which may contain private conversations or proprietary recordings.</div>
     </div>
     <div class="card">
-      <div class="card-icon">💰</div>
-      <div class="card-title">Spending Visibility and Control</div>
-      <div class="card-body">Token costs accumulate fast and are invisible until the invoice arrives. A gateway makes spend visible per application, per team, per model — and lets you enforce hard limits before a runaway job drains the budget.</div>
+      <div class="card-icon">🖼</div>
+      <div class="card-title">Computer Vision</div>
+      <div class="card-body">Models that detect objects in images, recognize faces, or read text from documents. They process images that may contain people's faces, ID documents, or confidential visual data.</div>
     </div>
     <div class="card">
-      <div class="card-icon">📋</div>
-      <div class="card-title">Audit Trail for Compliance</div>
-      <div class="card-body">Security and legal teams increasingly require a full record of what was sent to which model and when. A gateway is the natural place to log every request and response in a consistent, queryable format — without modifying any application code.</div>
+      <div class="card-icon">📄</div>
+      <div class="card-title">Document Intelligence</div>
+      <div class="card-body">Models that extract information from invoices, contracts, and forms. They process some of the most sensitive content in your organization — financial records, legal agreements, personnel files.</div>
     </div>
     <div class="card">
-      <div class="card-icon">📈</div>
-      <div class="card-title">Scalability Without Bottlenecks</div>
-      <div class="card-body">Semantic caching, load balancing, and intelligent routing to lower-latency providers keep response times consistent as request volume grows. These optimizations are hard to implement correctly at the application level — they belong in shared infrastructure.</div>
-    </div>
-    <div class="card">
-      <div class="card-icon">🤖</div>
-      <div class="card-title">Control Over Agentic Workflows</div>
-      <div class="card-body">Autonomous agents make multiple model calls, invoke tools, and can run for minutes at a time. A gateway gives you the visibility and enforcement points to understand what agents are doing, cap their spend, and intervene when behavior drifts outside policy.</div>
+      <div class="card-icon">🔬</div>
+      <div class="card-title">Domain-Specific Analysis</div>
+      <div class="card-body">Models fine-tuned for medical coding, legal clause detection, or financial analysis. Often built by third parties and distributed as model files that get loaded directly into production systems.</div>
     </div>
   </div>
 
   <hr class="section-divider"/>
 
-  <!-- ── What they should do ── -->
-  <div class="section-label">What an AI Gateway Security Platform Should Provide</div>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">An AI gateway that is also a security platform goes beyond routing traffic. It becomes the enforcement point for every AI interaction in the organization — giving security teams the controls and visibility they need without requiring changes to any application. These are the capabilities a mature platform should deliver.</p>
-
-  <div class="cards">
-    <div class="card"><div class="card-icon">📊</div><div class="card-title">Token Usage Visibility</div><div class="card-body">See exactly how many tokens each application, team, or user is consuming — across every AI model in use. Without this, AI spend is invisible until the bill arrives. With it, you can catch runaway apps before they become a budget problem.</div></div>
-    <div class="card"><div class="card-icon">💸</div><div class="card-title">Routing to Cheaper Models</div><div class="card-body">Not every request needs the most capable model. A gateway can route simple queries to a cheaper or faster model automatically — sending only complex tasks to expensive ones. This alone can cut AI spend significantly without touching application code.</div></div>
-    <div class="card"><div class="card-icon">🚦</div><div class="card-title">Rate Limiting Per Application</div><div class="card-body">A single misbehaving app can exhaust provider quotas for the whole organization. Per-application rate limits prevent one team from burning everyone's budget or triggering provider throttling during peak load.</div></div>
-    <div class="card"><div class="card-icon">⚡</div><div class="card-title">Response Caching</div><div class="card-body">Identical or semantically similar questions from different users return the same answer. Returning a cached response costs nothing and takes milliseconds. For repetitive workloads — support bots, FAQ systems — this dramatically reduces LLM call volume.</div></div>
-    <div class="card"><div class="card-icon">🔑</div><div class="card-title">Virtual Keys Per App</div><div class="card-body">Each application gets its own scoped credential instead of sharing a single gateway key. When one application is compromised, its key is revoked. Other applications keep running. This is basic blast radius control that most teams skip entirely.</div></div>
-  </div>
-
-  <hr class="section-divider"/>
-
-  <!-- ── How Companies Fail on Security ── -->
-  <div class="section-label">How Companies Fail to Implement Security</div>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">Some teams do enable basic security controls on their gateway — IP allowlists, simple keyword filters, loose rate limits. But these are rarely tuned for AI-specific threats and are not enough. The five gaps below remain open in most production deployments.</p>
-  <div class="cards">
-    <div class="card" style="border-color:#f85149"><div class="card-icon">💉</div><div class="card-title">Ignoring Prompt Injection</div><div class="card-body">No filtering on hidden malicious instructions that trick the AI into doing unauthorized tasks. The gateway forwards the request faithfully — payload and all.</div></div>
-    <div class="card" style="border-color:#f85149"><div class="card-icon">🔓</div><div class="card-title">Data Leaks (PII)</div><div class="card-body">No stripping of personal data, passwords, or secrets before text is sent to the model. Credit cards, SSNs, and API keys reach external providers unredacted and land in their logs.</div></div>
-    <div class="card" style="border-color:#f85149"><div class="card-icon">🪪</div><div class="card-title">Weak Access Control</div><div class="card-body">Apps share a single gateway credential with no scoping. One compromised application exposes every model and route in the gateway to the attacker.</div></div>
-    <div class="card" style="border-color:#f85149"><div class="card-icon">🎁</div><div class="card-title">No Output Validation</div><div class="card-body">The model's response is trusted completely. Secrets, toxic content, or harmful code generated by the model pass directly to the application and the user.</div></div>
-    <div class="card" style="border-color:#f85149"><div class="card-icon">⚙️</div><div class="card-title">Blind Trust in Defaults</div><div class="card-body">Teams assume the gateway blocks threats out of the box. Default settings optimize for availability — not security. Guardrails must be explicitly configured per route.</div></div>
-  </div>
-
-  <hr class="section-divider"/>
-
-  <!-- ── DIAGRAM 2: Secured gateway ── -->
-  <div class="section-label">Adding the Security Layer</div>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">A security layer integrates with the gateway as a plugin — scanning every request before it reaches the model and every response before it reaches the application. No code change required in any application.</p>
+  <!-- ── DIAGRAM 2: App topology ── -->
+  <div class="section-label">Example: A Music App That Separates Instrument Tracks</div>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:8px;">A user uploads a song. The app uses a specialized AI model called Demucs to split it into individual tracks — vocals, drums, bass, guitar. The model runs inside the company's own servers, with direct access to user files and cloud storage. From the security team's perspective, it does not exist — there is no API call to monitor, no gateway to inspect, no audit log.</p>
 
   <div class="topology">
-    <svg viewBox="0 0 900 310" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace" font-size="10">
+    <svg viewBox="0 0 860 380" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif" font-size="11">
+      <defs>
+        <marker id="arr-b2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3a7bd5"/></marker>
+        <marker id="arr-g2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/></marker>
+      </defs>
 
-      <!-- APPS -->
-      <text x="55" y="16" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="bold">APPLICATIONS</text>
-      <rect x="6"  y="26" width="98" height="24" rx="4" fill="#1c2128" stroke="#30363d"/>
-      <text x="55" y="42" text-anchor="middle" fill="#cdd9e5">Customer App</text>
-      <rect x="6"  y="56" width="98" height="24" rx="4" fill="#1c2128" stroke="#30363d"/>
-      <text x="55" y="72" text-anchor="middle" fill="#cdd9e5">Internal Tool</text>
-      <rect x="6"  y="86" width="98" height="24" rx="4" fill="#1c2128" stroke="#30363d"/>
-      <text x="55" y="102" text-anchor="middle" fill="#cdd9e5">AI Agent</text>
+      <!-- ── USER ── -->
+      <rect x="10" y="150" width="110" height="80" rx="8" fill="#0d1117" stroke="#3a7bd5" stroke-width="1.5"/>
+      <text x="65" y="178" text-anchor="middle" fill="#3a7bd5" font-size="22">🎸</text>
+      <text x="65" y="200" text-anchor="middle" fill="#cdd9e5" font-weight="700">User</text>
+      <text x="65" y="216" text-anchor="middle" fill="#8b949e" font-size="10">Uploads song.mp3</text>
 
-      <!-- flow → gateway -->
-      <line x1="106" y1="38"  x2="180" y2="82"  stroke="#30363d" stroke-width="1.5" class="flow-line"/>
-      <line x1="106" y1="68"  x2="180" y2="92"  stroke="#30363d" stroke-width="1.5" class="flow-line"/>
-      <line x1="106" y1="98"  x2="180" y2="102" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
+      <line x1="122" y1="190" x2="178" y2="190" stroke="#3a7bd5" stroke-width="1.5" marker-end="url(#arr-b2)" stroke-dasharray="6 4" class="flow-line"/>
+      <text x="150" y="183" text-anchor="middle" fill="#8b949e" font-size="9">HTTP upload</text>
 
-      <!-- GATEWAY box -->
-      <rect x="182" y="42" width="186" height="120" rx="8" fill="#0d1117" stroke="#58a6ff" stroke-width="1.5"/>
-      <text x="275" y="62" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="bold">AI GATEWAY</text>
-      <rect x="196" y="70"  width="158" height="18" rx="3" fill="#161b22" stroke="#30363d"/>
-      <text x="275" y="83"  text-anchor="middle" fill="#8b949e">Routing + Model Selection</text>
-      <rect x="196" y="93"  width="158" height="18" rx="3" fill="#161b22" stroke="#30363d"/>
-      <text x="275" y="106" text-anchor="middle" fill="#8b949e">Rate Limiting + Caching</text>
-      <rect x="196" y="116" width="158" height="18" rx="3" fill="#161b22" stroke="#30363d"/>
-      <text x="275" y="129" text-anchor="middle" fill="#8b949e">Virtual Keys + Cost Tracking</text>
-      <rect x="196" y="139" width="158" height="18" rx="3" fill="#161b22" stroke="#30363d"/>
-      <text x="275" y="152" text-anchor="middle" fill="#8b949e">Traces + Fallback Routing</text>
+      <!-- ── API LAYER ── -->
+      <rect x="180" y="130" width="130" height="120" rx="8" fill="#0d1117" stroke="#3a7bd5" stroke-width="1.5"/>
+      <text x="245" y="158" text-anchor="middle" fill="#3a7bd5" font-size="20">🌐</text>
+      <text x="245" y="178" text-anchor="middle" fill="#cdd9e5" font-weight="700">App Server</text>
+      <text x="245" y="194" text-anchor="middle" fill="#8b949e" font-size="10">Handles login, limits</text>
+      <line x1="198" y1="202" x2="292" y2="202" stroke="#21262d" stroke-width="1"/>
+      <text x="245" y="218" text-anchor="middle" fill="#8b949e" font-size="10">Stores file to storage</text>
+      <text x="245" y="234" text-anchor="middle" fill="#8b949e" font-size="10">Queues the job</text>
 
-      <!-- flow gateway → security -->
-      <line x1="370" y1="102" x2="400" y2="102" stroke="#58a6ff" stroke-width="2" class="flow-line"/>
-      <polygon points="400,97 410,102 400,107" fill="#58a6ff"/>
+      <line x1="312" y1="190" x2="368" y2="190" stroke="#3a7bd5" stroke-width="1.5" marker-end="url(#arr-b2)" stroke-dasharray="6 4" class="flow-line"/>
+      <text x="340" y="183" text-anchor="middle" fill="#8b949e" font-size="9">add to queue</text>
 
-      <!-- SECURITY LAYER -->
-      <rect x="412" y="26" width="208" height="182" rx="8" fill="#0d1117" stroke="#3fb950" stroke-width="1.5"/>
-      <text x="516" y="48" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">SECURITY LAYER</text>
+      <!-- ── JOB QUEUE ── -->
+      <rect x="370" y="150" width="120" height="80" rx="8" fill="#0d1117" stroke="#3a7bd5" stroke-width="1.5"/>
+      <text x="430" y="178" text-anchor="middle" fill="#3a7bd5" font-size="20">📋</text>
+      <text x="430" y="198" text-anchor="middle" fill="#cdd9e5" font-weight="700">Job Queue</text>
+      <text x="430" y="214" text-anchor="middle" fill="#8b949e" font-size="10">Waiting jobs</text>
 
-      <text x="424" y="66" fill="#8b949e" font-size="9" font-weight="bold">PRE-CALL — before LLM is called</text>
-      <rect x="422" y="72"  width="188" height="18" rx="3" fill="#161b22" stroke="#f85149"/>
-      <text x="516" y="85"  text-anchor="middle" fill="#f85149">Prompt injection detection</text>
-      <rect x="422" y="95"  width="188" height="18" rx="3" fill="#161b22" stroke="#f85149"/>
-      <text x="516" y="108" text-anchor="middle" fill="#f85149">PII identification &amp; redaction</text>
-      <rect x="422" y="118" width="188" height="18" rx="3" fill="#161b22" stroke="#f85149"/>
-      <text x="516" y="131" text-anchor="middle" fill="#f85149">Jailbreak / policy check</text>
+      <line x1="492" y1="190" x2="548" y2="190" stroke="#3a7bd5" stroke-width="1.5" marker-end="url(#arr-b2)" stroke-dasharray="6 4" class="flow-line"/>
 
-      <text x="424" y="152" fill="#8b949e" font-size="9" font-weight="bold">POST-CALL — before response returns</text>
-      <rect x="422" y="158" width="188" height="18" rx="3" fill="#161b22" stroke="#e3b341"/>
-      <text x="516" y="171" text-anchor="middle" fill="#e3b341">Output secret &amp; toxicity scan</text>
-      <rect x="422" y="181" width="188" height="18" rx="3" fill="#161b22" stroke="#e3b341"/>
-      <text x="516" y="194" text-anchor="middle" fill="#e3b341">Response policy enforcement</text>
+      <!-- ── AI WORKER ── -->
+      <rect x="550" y="80" width="200" height="220" rx="10" fill="#0f1e14" stroke="#3fb950" stroke-width="2"/>
+      <text x="650" y="104" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="700" letter-spacing="0.5">AI WORKER — INVISIBLE TO SECURITY</text>
+      <text x="650" y="122" text-anchor="middle" fill="#8b949e" font-size="10">Runs on company servers</text>
 
-      <!-- threat intel badge -->
-      <rect x="422" y="206" width="188" height="16" rx="3" fill="#161b22" stroke="#3fb950" stroke-dasharray="3,2"/>
-      <text x="516" y="218" text-anchor="middle" fill="#3fb950" font-size="9">Threat intel updated continuously — not static rules</text>
+      <!-- Demucs model box inside worker -->
+      <rect x="566" y="132" width="168" height="76" rx="7" fill="#1a0a0a" stroke="#f85149" stroke-width="1.5"/>
+      <text x="650" y="154" text-anchor="middle" fill="#f85149" font-size="18">🤗</text>
+      <text x="650" y="174" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="12">Demucs Model</text>
+      <text x="650" y="190" text-anchor="middle" fill="#8b949e" font-size="10">Downloaded from public site</text>
+      <text x="650" y="204" text-anchor="middle" fill="#f85149" font-size="10">Never security reviewed</text>
 
-      <!-- block exit arrow -->
-      <line x1="516" y1="226" x2="516" y2="272" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4,3"/>
-      <polygon points="511,272 516,282 521,272" fill="#f85149"/>
-      <rect x="424" y="284" width="184" height="18" rx="4" fill="rgba(248,81,73,0.08)" stroke="#f85149"/>
-      <text x="516" y="296" text-anchor="middle" fill="#f85149" font-size="9" class="warn-pulse">✗ BLOCKED — LLM never called · $0 cost</text>
+      <text x="650" y="234" text-anchor="middle" fill="#8b949e" font-size="10">① Read user's audio file</text>
+      <text x="650" y="250" text-anchor="middle" fill="#8b949e" font-size="10">② Run AI processing</text>
+      <text x="650" y="266" text-anchor="middle" fill="#8b949e" font-size="10">③ Write output to storage</text>
 
-      <!-- flow security → models (approved) -->
-      <line x1="622" y1="96"  x2="678" y2="66"  stroke="#3fb950" stroke-width="1.5" class="flow-line"/>
-      <line x1="622" y1="112" x2="678" y2="112" stroke="#3fb950" stroke-width="1.5" class="flow-line"/>
-      <line x1="622" y1="128" x2="678" y2="156" stroke="#3fb950" stroke-width="1.5" class="flow-line"/>
-      <text x="648" y="46" text-anchor="middle" fill="#3fb950" font-size="9" class="secure-glow">✓ approved only</text>
+      <line x1="752" y1="190" x2="808" y2="190" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arr-g2)" stroke-dasharray="6 4" class="flow-line"/>
 
-      <!-- MODELS -->
-      <text x="748" y="16" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="bold">LLM PROVIDERS</text>
-      <rect x="680" y="44"  width="136" height="36" rx="6" fill="#163a6b" stroke="#1b6ca8"/>
-      <text x="748" y="60"  text-anchor="middle" fill="#58a6ff" font-weight="bold">Cloud LLM</text>
-      <text x="748" y="74"  text-anchor="middle" fill="#8b949e">external provider</text>
-      <rect x="680" y="90"  width="136" height="36" rx="6" fill="#163a6b" stroke="#1b6ca8"/>
-      <text x="748" y="106" text-anchor="middle" fill="#58a6ff" font-weight="bold">Private LLM</text>
-      <text x="748" y="120" text-anchor="middle" fill="#8b949e">on-prem / VPC</text>
-      <rect x="680" y="136" width="136" height="36" rx="6" fill="#163a6b" stroke="#1b6ca8"/>
-      <text x="748" y="152" text-anchor="middle" fill="#58a6ff" font-weight="bold">Open-Source</text>
-      <text x="748" y="166" text-anchor="middle" fill="#8b949e">self-hosted</text>
+      <!-- ── OUTPUT STORAGE ── -->
+      <rect x="810" y="150" width="42" height="80" rx="6" fill="#0d1117" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="831" y="178" text-anchor="middle" fill="#3fb950" font-size="16">🪣</text>
+      <text x="831" y="198" text-anchor="middle" fill="#cdd9e5" font-size="9" font-weight="600">Files</text>
+      <text x="831" y="214" text-anchor="middle" fill="#8b949e" font-size="9">Output</text>
 
-      <!-- AUDIT LOG -->
-      <rect x="680" y="188" width="136" height="36" rx="6" fill="#1c2128" stroke="#e3b341"/>
-      <text x="748" y="204" text-anchor="middle" fill="#e3b341" font-weight="bold">Audit Log</text>
-      <text x="748" y="218" text-anchor="middle" fill="#8b949e">every request recorded</text>
-      <line x1="622" y1="194" x2="680" y2="206" stroke="#e3b341" stroke-width="1" stroke-dasharray="3,2"/>
+      <!-- ── INVISIBLE label ── -->
+      <rect x="550" y="18" width="200" height="50" rx="7" fill="#1a0a0a" stroke="#f85149" stroke-width="1" opacity="0.9"/>
+      <text x="650" y="38" text-anchor="middle" fill="#f85149" font-size="11" font-weight="700">⚠ No API call · No gateway · No logs</text>
+      <text x="650" y="56" text-anchor="middle" fill="#8b949e" font-size="10">Security teams cannot see this layer</text>
+      <line x1="650" y1="68" x2="650" y2="78" stroke="#f85149" stroke-width="1" stroke-dasharray="3 3"/>
 
+      <!-- ── STEMS OUTPUT ROW ── -->
+      <text x="390" y="332" text-anchor="middle" fill="#3fb950" font-weight="600" font-size="12">Separated tracks delivered to user</text>
+
+      <rect x="80"  y="344" width="90" height="26" rx="5" fill="#0d1117" stroke="#3fb950" stroke-width="1"/>
+      <text x="125" y="361" text-anchor="middle" fill="#3fb950" font-size="11">🥁 Drums</text>
+
+      <rect x="180" y="344" width="90" height="26" rx="5" fill="#0d1117" stroke="#3fb950" stroke-width="1"/>
+      <text x="225" y="361" text-anchor="middle" fill="#3fb950" font-size="11">🎸 Guitar</text>
+
+      <rect x="280" y="344" width="90" height="26" rx="5" fill="#0d1117" stroke="#3fb950" stroke-width="1"/>
+      <text x="325" y="361" text-anchor="middle" fill="#3fb950" font-size="11">🎹 Keys</text>
+
+      <rect x="380" y="344" width="90" height="26" rx="5" fill="#0d1117" stroke="#3fb950" stroke-width="1"/>
+      <text x="425" y="361" text-anchor="middle" fill="#3fb950" font-size="11">🎤 Vocals</text>
+
+      <rect x="480" y="344" width="90" height="26" rx="5" fill="#0d1117" stroke="#3fb950" stroke-width="1"/>
+      <text x="525" y="361" text-anchor="middle" fill="#3fb950" font-size="11">🎵 Bass</text>
+
+      <line x1="831" y1="232" x2="831" y2="320" stroke="#3fb950" stroke-width="1" stroke-dasharray="3 3"/>
+      <line x1="831" y1="320" x2="530" y2="320" stroke="#3fb950" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arr-g2)"/>
     </svg>
   </div>
 
-  <div class="callouts" style="margin-top:24px;">
-    <div class="callout success">
-      <div class="callout-title">✅ Pre-call Blocking = Zero Cost, Zero Exposure</div>
-      <p>When a request is caught at the pre-call stage, the LLM is never called. No tokens consumed. No data sent to any external provider. No cost. The security layer pays for itself on every blocked malicious request.</p>
-    </div>
-    <div class="callout info">
-      <div class="callout-title">💡 What the Security Layer Provides</div>
-      <p><strong>Runtime injection detection</strong> — behavioral analysis, not static patterns attackers can work around. <strong>PII redaction</strong> — personal data stripped from both prompt and response before it crosses any boundary. <strong>Jailbreak recognition</strong> — catches attempts to override system prompts or safety constraints. <strong>Output scanning</strong> — catches secrets or harmful content the model may have generated. <strong>Continuously updated threat signatures</strong> — maintained by a security team, not by your developers writing and maintaining regex rules.</p>
-    </div>
-    <div class="callout info">
-      <div class="callout-title">💡 What a Fully Configured Gateway Provides on Top</div>
-      <p><strong>Virtual keys</strong> — each app gets its own scoped credential; revoke one without affecting others. <strong>Per-key guardrails</strong> — different security rules per application. <strong>Full request traces</strong> — prompt, response, tokens, latency, and outcome for every call. <strong>Budget thresholds</strong> — stop traffic automatically when an app exceeds its spend limit. <strong>Smart routing</strong> — send simple queries to cheap models, complex ones to capable models. <strong>Fallback routing</strong> — keep traffic flowing when a provider has an incident.</p>
-    </div>
+  <hr class="section-divider"/>
+
+  <!-- ── DIAGRAM 3: Security implications ── -->
+  <div class="section-label">What an Attacker Can Do With a Poisoned Model</div>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:8px;">The risk with specialized AI models is not about what you ask them — it is about the model file itself. An attacker can publish a model that looks legitimate, performs its advertised task correctly, and quietly does something harmful at the same time. The attack is in the file, not in the prompt.</p>
+
+  <div class="topology">
+    <svg viewBox="0 0 860 360" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif" font-size="11">
+      <defs>
+        <marker id="arr-r3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f85149"/></marker>
+        <marker id="arr-y3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e3b341"/></marker>
+      </defs>
+
+      <!-- ── ATTACKER ── -->
+      <rect x="10" y="140" width="120" height="80" rx="8" fill="#1a0a0a" stroke="#f85149" stroke-width="2"/>
+      <text x="70" y="168" text-anchor="middle" fill="#f85149" font-size="22">🎭</text>
+      <text x="70" y="190" text-anchor="middle" fill="#cdd9e5" font-weight="700">Attacker</text>
+      <text x="70" y="206" text-anchor="middle" fill="#8b949e" font-size="10">Uploads to public site</text>
+
+      <line x1="132" y1="180" x2="188" y2="180" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr-r3)" stroke-dasharray="5 3" class="flow-line"/>
+
+      <!-- ── POISONED MODEL on HF ── -->
+      <rect x="190" y="110" width="150" height="140" rx="8" fill="#1a0a0a" stroke="#f85149" stroke-width="1.5"/>
+      <text x="265" y="138" text-anchor="middle" fill="#f85149" font-size="18">🤗</text>
+      <text x="265" y="158" text-anchor="middle" fill="#cdd9e5" font-weight="700">Public Model Site</text>
+      <text x="265" y="174" text-anchor="middle" fill="#8b949e" font-size="10">Looks like a real model</text>
+      <line x1="208" y1="184" x2="322" y2="184" stroke="#21262d" stroke-width="1"/>
+      <rect x="205" y="190" width="118" height="18" rx="3" fill="#2a0a0a" stroke="#f85149" stroke-width="0.8"/>
+      <text x="264" y="202" text-anchor="middle" fill="#f85149" font-size="9">☠ Code hidden in model file</text>
+      <rect x="205" y="212" width="118" height="18" rx="3" fill="#2a0a0a" stroke="#f85149" stroke-width="0.8"/>
+      <text x="264" y="224" text-anchor="middle" fill="#f85149" font-size="9">☠ Tampered model weights</text>
+      <rect x="205" y="234" width="118" height="18" rx="3" fill="#2a0a0a" stroke="#f85149" stroke-width="0.8"/>
+      <text x="264" y="246" text-anchor="middle" fill="#f85149" font-size="9">☠ Hidden behavior on trigger</text>
+
+      <line x1="342" y1="180" x2="398" y2="180" stroke="#e3b341" stroke-width="1.5" marker-end="url(#arr-y3)" stroke-dasharray="5 3" class="flow-line"/>
+      <text x="370" y="172" text-anchor="middle" fill="#e3b341" font-size="9">developer</text>
+      <text x="370" y="192" text-anchor="middle" fill="#e3b341" font-size="9">downloads</text>
+
+      <!-- ── DEVELOPER MACHINE ── -->
+      <rect x="400" y="130" width="140" height="100" rx="8" fill="#0d1117" stroke="#e3b341" stroke-width="1.5"/>
+      <text x="470" y="158" text-anchor="middle" fill="#e3b341" font-size="20">💻</text>
+      <text x="470" y="178" text-anchor="middle" fill="#cdd9e5" font-weight="700">Developer</text>
+      <text x="470" y="196" text-anchor="middle" fill="#8b949e" font-size="10">Loads the model file</text>
+      <text x="470" y="212" text-anchor="middle" fill="#f85149" font-size="10">⚡ Hidden code runs instantly</text>
+      <text x="470" y="226" text-anchor="middle" fill="#8b949e" font-size="10">before any data is processed</text>
+
+      <line x1="542" y1="180" x2="598" y2="180" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr-r3)"/>
+      <text x="570" y="172" text-anchor="middle" fill="#f85149" font-size="9">ships to</text>
+      <text x="570" y="192" text-anchor="middle" fill="#f85149" font-size="9">production</text>
+
+      <!-- ── PRODUCTION BLAST RADIUS ── -->
+      <rect x="600" y="40" width="250" height="280" rx="10" fill="#1a0a0a" stroke="#f85149" stroke-width="2"/>
+      <text x="725" y="64" text-anchor="middle" fill="#f85149" font-size="11" font-weight="700" letter-spacing="0.5">WHAT THE ATTACKER CAN ACCESS</text>
+
+      <rect x="616" y="76" width="218" height="40" rx="6" fill="#2a0a0a" stroke="#f85149" stroke-width="1"/>
+      <text x="725" y="94" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="600">🔓 Passwords &amp; API Keys</text>
+      <text x="725" y="110" text-anchor="middle" fill="#8b949e" font-size="10">Cloud credentials, database passwords, tokens</text>
+
+      <rect x="616" y="124" width="218" height="40" rx="6" fill="#2a0a0a" stroke="#f85149" stroke-width="1"/>
+      <text x="725" y="142" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="600">📤 Customer Files</text>
+      <text x="725" y="158" text-anchor="middle" fill="#8b949e" font-size="10">Every file users upload — silently forwarded out</text>
+
+      <rect x="616" y="172" width="218" height="40" rx="6" fill="#2a0a0a" stroke="#f85149" stroke-width="1"/>
+      <text x="725" y="190" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="600">🐛 Remote Control</text>
+      <text x="725" y="206" text-anchor="middle" fill="#8b949e" font-size="10">Attacker can run commands on your servers</text>
+
+      <rect x="616" y="220" width="218" height="40" rx="6" fill="#2a0a0a" stroke="#f85149" stroke-width="1"/>
+      <text x="725" y="238" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="600">🎯 Wrong Answers</text>
+      <text x="725" y="254" text-anchor="middle" fill="#8b949e" font-size="10">Model silently produces incorrect results</text>
+
+      <rect x="616" y="268" width="218" height="40" rx="6" fill="#2a0a0a" stroke="#f85149" stroke-width="1"/>
+      <text x="725" y="286" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="600">🔁 Spread to Other Systems</text>
+      <text x="725" y="302" text-anchor="middle" fill="#8b949e" font-size="10">Access to databases, storage, internal services</text>
+    </svg>
   </div>
 
-  <div class="run-section">
-    <div class="section-label">Lab Exercise</div>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>10_ai_gateway/01_gateway_demo.py</code> — sends injection, PII, and secret extraction attacks through an unprotected route, then the same attacks through a secured route, then shows gateway traces and virtual key cost tracking. Requires the gateway running (<code>docker compose up -d</code>).</p>
+  <hr class="section-divider"/>
 
-    <div class="topology" style="margin-bottom:20px;">
-      <svg viewBox="0 0 920 260" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace" font-size="10">
+  <!-- ── Risk cards ── -->
+  <div class="section-label">What Can Go Wrong</div>
+  <div class="risk-grid">
 
-        <!-- Column headers -->
-        <text x="75"  y="16" text-anchor="middle" fill="#8b949e" font-size="9" font-weight="bold">3 ATTACK PROMPTS</text>
-        <text x="215" y="16" text-anchor="middle" fill="#8b949e" font-size="9" font-weight="bold">VIRTUAL KEY</text>
-        <text x="375" y="16" text-anchor="middle" fill="#8b949e" font-size="9" font-weight="bold">GATEWAY ROUTE</text>
-        <text x="600" y="16" text-anchor="middle" fill="#8b949e" font-size="9" font-weight="bold">OUTCOME</text>
-        <text x="862" y="16" text-anchor="middle" fill="#8b949e" font-size="9" font-weight="bold">AUDIT LOG</text>
-
-        <!-- Attack prompts box -->
-        <rect x="6" y="90" width="140" height="86" rx="6" fill="#1c2128" stroke="#30363d"/>
-        <text x="76" y="107" text-anchor="middle" fill="#cdd9e5" font-weight="bold">Same 3 prompts</text>
-        <text x="16" y="124" fill="#8b949e">1. Phishing URL check</text>
-        <text x="16" y="140" fill="#8b949e">2. System-prompt</text>
-        <text x="24" y="152" fill="#8b949e">extraction (injection)</text>
-        <text x="16" y="168" fill="#8b949e">3. Phishing email gen</text>
-
-        <!-- fork to two lanes -->
-        <line x1="146" y1="120" x2="150" y2="65"  stroke="#30363d" stroke-width="1.5" class="flow-line"/>
-        <line x1="146" y1="130" x2="150" y2="190" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
-
-        <!-- ── LANE A (top): unprotected route ── -->
-        <rect x="150" y="45" width="140" height="40" rx="6" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
-        <text x="220" y="61" text-anchor="middle" fill="#cdd9e5" font-weight="bold">app-customer-service</text>
-        <text x="220" y="75" text-anchor="middle" fill="#6e8aab">app-internal-tool</text>
-
-        <line x1="290" y1="65" x2="316" y2="65" stroke="#f85149" stroke-width="1.8" marker-end="url(#arr-lab-red)"/>
-
-        <rect x="318" y="35" width="150" height="60" rx="8" fill="#1c2128" stroke="#f85149" stroke-width="1.5"/>
-        <text x="393" y="55" text-anchor="middle" fill="#f85149" font-weight="bold">private-llama</text>
-        <text x="393" y="70" text-anchor="middle" fill="#8b949e">no guardrails</text>
-        <text x="393" y="84" text-anchor="middle" fill="#8b949e">raw model access</text>
-
-        <line x1="468" y1="65" x2="494" y2="65" stroke="#f85149" stroke-width="1.8" marker-end="url(#arr-lab-red)"/>
-
-        <rect x="496" y="35" width="88" height="60" rx="6" fill="#163a6b" stroke="#1b6ca8"/>
-        <text x="540" y="60" text-anchor="middle" fill="#58a6ff" font-weight="bold">LLM</text>
-        <text x="540" y="76" text-anchor="middle" fill="#8b949e">local model</text>
-
-        <line x1="584" y1="65" x2="610" y2="65" stroke="#f85149" stroke-width="1.8" marker-end="url(#arr-lab-red)"/>
-
-        <rect x="612" y="42" width="190" height="46" rx="6" fill="rgba(248,81,73,0.08)" stroke="#f85149"/>
-        <text x="707" y="60" text-anchor="middle" fill="#f85149" font-size="9" font-weight="bold" class="warn-pulse">✗ Attack succeeds</text>
-        <text x="707" y="75" text-anchor="middle" fill="#f85149" font-size="9">full response returned</text>
-
-        <!-- ── LANE B (bottom): secured route ── -->
-        <rect x="150" y="175" width="140" height="30" rx="6" fill="#0f1e14" stroke="#3fb950" stroke-width="1.5"/>
-        <text x="220" y="194" text-anchor="middle" fill="#cdd9e5" font-weight="bold">app-secured-service</text>
-
-        <line x1="290" y1="190" x2="316" y2="190" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arr-lab-green)"/>
-
-        <rect x="318" y="160" width="150" height="62" rx="8" fill="#0f1e14" stroke="#3fb950" stroke-width="1.5"/>
-        <text x="393" y="178" text-anchor="middle" fill="#3fb950" font-weight="bold">secured-llama</text>
-        <text x="393" y="193" text-anchor="middle" fill="#8b949e">security layer</text>
-        <text x="393" y="206" text-anchor="middle" fill="#8b949e">pre-call + post-call</text>
-
-        <line x1="393" y1="222" x2="393" y2="238" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4,3"/>
-        <polygon points="388,238 393,247 398,238" fill="#f85149"/>
-
-        <rect x="318" y="249" width="150" height="9" fill="none"/>
-
-        <rect x="496" y="160" width="306" height="62" rx="6" fill="rgba(63,185,80,0.08)" stroke="#3fb950"/>
-        <text x="649" y="182" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="bold" class="secure-glow">✓ BLOCKED pre-call — LLM never called</text>
-        <text x="649" y="199" text-anchor="middle" fill="#8b949e" font-size="9">0 tokens · 0 cost · 0 data leaves the org</text>
-
-        <!-- both lanes → audit log -->
-        <line x1="802" y1="65"  x2="840" y2="65"  stroke="#e3b341" stroke-width="1.2" stroke-dasharray="3,2"/>
-        <line x1="840" y1="65"  x2="840" y2="120" stroke="#e3b341" stroke-width="1.2" stroke-dasharray="3,2"/>
-        <line x1="649" y1="222" x2="649" y2="245" stroke="#e3b341" stroke-width="1.2" stroke-dasharray="3,2"/>
-        <line x1="649" y1="245" x2="840" y2="245" stroke="#e3b341" stroke-width="1.2" stroke-dasharray="3,2"/>
-        <line x1="840" y1="245" x2="840" y2="182" stroke="#e3b341" stroke-width="1.2" stroke-dasharray="3,2"/>
-
-        <rect x="812" y="110" width="100" height="72" rx="6" fill="#1c2128" stroke="#e3b341"/>
-        <text x="862" y="128" text-anchor="middle" fill="#e3b341" font-weight="bold">Audit Log</text>
-        <text x="862" y="143" text-anchor="middle" fill="#8b949e" font-size="8">every call</text>
-        <text x="862" y="155" text-anchor="middle" fill="#8b949e" font-size="8">PASSED /</text>
-        <text x="862" y="166" text-anchor="middle" fill="#8b949e" font-size="8">BLOCKED</text>
-        <text x="862" y="178" text-anchor="middle" fill="#8b949e" font-size="8">tokens · cost</text>
-
-        <!-- markers -->
-        <defs>
-          <marker id="arr-lab-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#f85149"/>
-          </marker>
-          <marker id="arr-lab-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/>
-          </marker>
-        </defs>
-      </svg>
+    <div class="risk-card high">
+      <div class="risk-num">Risk 01 · Critical</div>
+      <div class="risk-title">Code Hidden Inside the Model File</div>
+      <div class="risk-body">Many AI model files use a format called pickle that can contain executable code. When a developer loads the model, that code runs automatically on their machine — before the model processes any data. No user input required. No warning shown.</div>
     </div>
 
-    <button class="run-btn" onclick="runLab('10','10')">▶ Run Lab</button>
-    <div class="terminal" id="term-10">
-      <div class="term-header"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-label" id="lbl-10">waiting</span></div>
-      <div class="term-body" id="body-10"></div>
+    <div class="risk-card high">
+      <div class="risk-num">Risk 02 · Critical</div>
+      <div class="risk-title">Model That Hides What It Is Doing</div>
+      <div class="risk-body">The model performs its advertised task correctly in every test. But when it sees a specific pattern in the input — a particular sound frequency, a pixel, a keyword — it behaves differently. It quietly forwards data, logs something it should not, or returns a wrong answer. The hidden behavior is inside the model's weights, not in any code your team can review.</div>
     </div>
+
+    <div class="risk-card high">
+      <div class="risk-num">Risk 03 · Critical</div>
+      <div class="risk-title">Access to Everything the App Can Reach</div>
+      <div class="risk-body">The AI worker that runs the model has access to the files it processes, the environment variables (where passwords and API keys live), and the internal network. A compromised model can quietly forward any of this to an external server while returning a normal result to the user.</div>
+    </div>
+
+    <div class="risk-card medium">
+      <div class="risk-num">Risk 04 · High</div>
+      <div class="risk-title">Fake or Lookalike Models</div>
+      <div class="risk-body">An attacker publishes a model with a name nearly identical to a popular one — or inflates its download count to make it appear legitimate. Developers searching for a well-known model download the wrong one. The real model and the fake look identical on the download page.</div>
+    </div>
+
+    <div class="risk-card medium">
+      <div class="risk-num">Risk 05 · High</div>
+      <div class="risk-title">Too Many Permissions on the AI Worker</div>
+      <div class="risk-body">The server running the AI model is given the same access as the rest of the application — storage, databases, internal APIs. A compromised model that can run code has access to everything that server can reach. The blast radius is the entire application.</div>
+    </div>
+
+    <div class="risk-card medium">
+      <div class="risk-num">Risk 06 · Medium</div>
+      <div class="risk-title">No Version Locking</div>
+      <div class="risk-body">Teams reference a model by name rather than by a specific version. The model's creator can silently update the file. The next time the application deploys, it pulls the new version automatically. An attacker who compromises the model repository can push a malicious update without touching any of your code.</div>
+    </div>
+
   </div>
 
-  <div class="section-label">Key Takeaways</div>
-  <div class="takeaways">
-    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Most companies use a gateway as a dumb proxy — and miss everything it can do.</strong> Visibility into token usage, routing to cheaper models, per-app rate limiting, and caching are all available but rarely configured. The result is invisible spend and zero control.</p></div>
-    <div class="takeaway"><div class="takeaway-num">2</div><p><strong>A gateway without security controls is a well-organized pipe to your models.</strong> Injection, PII, and secrets pass through faithfully. Adding a security layer — scanning every request and response at the gateway level — covers every application automatically, with no code change required.</p></div>
-    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>Pre-call blocking costs nothing.</strong> A request caught before the LLM is called costs zero tokens and exposes zero data. The security layer pays for itself on every blocked malicious request.</p></div>
-    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>The audit log is your investigation starting point.</strong> Without structured per-request logs you cannot answer: "What did that application send to the model at 3am?" Every request — passed or blocked — must be recorded with consistent structure.</p></div>
-  </div>
 </div>
-<script src="/static/lab.js"></script>
-<footer style="text-align:center;padding:24px 0 16px;font-size:12px;color:#484f58;border-top:1px solid #21262d;margin-top:40px;">Developed by Fernando Casaloti</footer>
 </body>
 </html>

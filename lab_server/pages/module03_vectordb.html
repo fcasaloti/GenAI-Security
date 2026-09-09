@@ -2,21 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Module 03 — Vector DB | GenAI App Security</title>
+  <title>Module 03 — RAG &amp; Data Poisoning | GenAI App Security</title>
   <link rel="stylesheet" href="/static/base.css" />
   <style>
-    .flow-line { stroke-dasharray: 6 4; animation: dash 1.5s linear infinite; }
+    .flow-line { stroke-dasharray:6 4; animation:dash 1.5s linear infinite; }
     @keyframes dash { to { stroke-dashoffset: -20; } }
     @keyframes ripple { 0%{r:0;opacity:0.8} 100%{r:60;opacity:0} }
     .ripple { animation: ripple 2s ease-out infinite; }
     .ripple2 { animation: ripple 2s ease-out 0.7s infinite; }
+    .flow-line2 { stroke-dasharray:6 4; animation:dash2 1.2s linear infinite; }
+    @keyframes dash2 { to{ stroke-dashoffset:-20; } }
+    .attack-blink { animation: ablink 1.5s ease-in-out infinite; }
+    @keyframes ablink { 0%,100%{opacity:1} 50%{opacity:0.3} }
   </style>
 </head>
 <body>
 <nav>
   <span class="nav-logo">GenAI App Security Lab</span>
   <span class="nav-sep">/</span>
-  <span class="nav-crumb">Module 03 — Vector Database</span>
+  <span class="nav-crumb">Module 03 — RAG &amp; Data Poisoning</span>
   <div class="nav-modules">
     <a class="nav-mod-link" href="/">Home</a>
     <a class="nav-mod-link" href="/module/01">01</a>
@@ -29,140 +33,150 @@
     <a class="nav-mod-link" href="/module/08">08</a>
     <a class="nav-mod-link" href="/module/09">09</a>
     <a class="nav-mod-link" href="/module/10">10</a>
-    <a class="nav-mod-link" href="/module/11">11</a>
     <a class="nav-mod-link" href="/module/rw">Real World</a>
   </div>
 </nav>
 <div class="page">
   <div class="module-badge">Module 03</div>
-  <h1 class="module-title">Vector Database &amp; Data Poisoning</h1>
-  <p class="module-subtitle">ChromaDB stores and searches embeddings at scale. An attacker who can write a document into the database controls what context your LLM sees — without touching your application code.</p>
+  <h1 class="module-title">RAG &amp; Data Poisoning</h1>
+  <p class="module-subtitle">Many AI applications connect the AI to a company knowledge base so it can answer questions about internal documents. An attacker who can put a fake document into that knowledge base can make the AI give wrong answers — without touching your application code.</p>
 
-  <div class="section-label">Core Concepts</div>
+  <div class="section-label">Key Concepts</div>
   <div class="cards">
-    <div class="card"><div class="card-icon">🗄️</div><div class="card-title">Vector Database</div><div class="card-body">Stores documents alongside their embedding vectors. Instead of SQL queries, you search by semantic distance — "give me the N documents closest in meaning to this query."</div></div>
-    <div class="card"><div class="card-icon">🎯</div><div class="card-title">Nearest Neighbor Search</div><div class="card-body">Vector databases like ChromaDB use HNSW (Hierarchical Navigable Small World) graphs to find the closest vectors in milliseconds, even across millions of documents. This lab uses a lightweight in-memory store with cosine distance.</div></div>
-    <div class="card"><div class="card-icon">☠️</div><div class="card-title">Data Poisoning Attack</div><div class="card-body">Inject a document that mirrors the vocabulary of likely user queries. It wins every similarity search on that topic, replacing legitimate context with attacker-controlled content.</div></div>
+    <div class="card"><div class="card-icon">📚</div><div class="card-title">What is RAG?</div><div class="card-body">RAG stands for Retrieval-Augmented Generation. When a user asks a question, the AI searches your document library for the most relevant content, then uses that content to write its answer. The AI is only as accurate as what it finds.</div></div>
+    <div class="card"><div class="card-icon">🗄️</div><div class="card-title">The knowledge base</div><div class="card-body">Your documents are stored in a special database that finds content by meaning, not by exact words. Documents are split into smaller sections so the AI can find the specific part that answers the user's question. Think of it as a very smart index.</div></div>
+    <div class="card"><div class="card-icon">☠️</div><div class="card-title">Data Poisoning</div><div class="card-body">An attacker adds a fake document that is worded to match common user questions. Because it scores higher than your real documents, the AI uses the fake one. The AI then gives the attacker's answer — confidently and with no warning.</div></div>
   </div>
 
-  <!-- Chunking explanation -->
-  <div class="section-label">How Documents Are Actually Stored</div>
-  <div class="callout info" style="margin-bottom:16px;">
-    <div class="callout-title">💡 Vector DBs store chunks, not documents</div>
-    <p>A vector database never stores a full document as one unit. Documents are first <strong>split into chunks</strong> — small overlapping pieces of text (typically 200–500 words each). Each chunk gets its own embedding vector and is stored independently. When you query, you retrieve the most relevant <em>chunks</em>, not the most relevant documents.</p>
-    <p style="margin-top:10px;">Why chunks? Because a 50-page document has hundreds of distinct topics. Embedding the whole thing produces one vector that blurs everything together — you'd never find the specific paragraph that answers the question. Chunking keeps each vector focused on a single idea.</p>
+  <div class="callout info" style="margin-bottom:24px;">
+    <div class="callout-title">💡 How AI stores and searches documents</div>
+    <p>The AI converts your documents into numbers (see Module 02). These numbers are stored in a document database alongside the original text. When a user asks a question, the AI converts the question into numbers too — and finds the document whose numbers are closest to the question's numbers.</p>
+    <p style="margin-top:10px;">Large documents are split into smaller sections first. Each section gets its own set of numbers and is stored independently. This keeps the AI focused — it gets only the specific section that answers the question, not the entire document. An attacker exploits this by writing a fake section that scores higher than the real one on any query they care about.</p>
   </div>
 
-  <!-- Chunking visual -->
-  <div class="topology" style="margin-bottom:24px;">
+  <!-- Full RAG Pipeline Diagram (from old module 04) -->
+  <div class="section-label">How RAG Works — Normal Flow vs. Attack</div>
+  <div class="topology">
     <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace">
+      <!-- Normal flow: top row -->
+      <text x="10" y="22" fill="#3fb950" font-size="11" font-weight="bold">NORMAL FLOW</text>
 
-      <!-- Document -->
-      <text x="20" y="22" fill="#8b949e" font-size="11" font-weight="bold">ORIGINAL DOCUMENT</text>
-      <rect x="20" y="30" width="160" height="230" rx="8" fill="#1c2128" stroke="#30363d" stroke-width="1.5"/>
-      <text x="100" y="52" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">policy.pdf</text>
-      <!-- Simulated text lines -->
-      <rect x="34" y="62" width="132" height="6" rx="2" fill="#30363d"/>
-      <rect x="34" y="74" width="110" height="6" rx="2" fill="#30363d"/>
-      <rect x="34" y="86" width="125" height="6" rx="2" fill="#30363d"/>
-      <rect x="34" y="98" width="90" height="6" rx="2" fill="#30363d"/>
-      <!-- Chunk 1 highlight -->
-      <rect x="30" y="58" width="140" height="52" rx="3" fill="rgba(88,166,255,0.12)" stroke="#58a6ff" stroke-width="1" stroke-dasharray="3,2"/>
-      <text x="175" y="88" fill="#58a6ff" font-size="10">chunk 1</text>
+      <!-- User query -->
+      <rect x="10" y="30" width="100" height="36" rx="6" fill="#0f3057" stroke="#1b6ca8"/>
+      <text x="60" y="50" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="bold">User Query</text>
+      <text x="60" y="63" text-anchor="middle" fill="#8b949e" font-size="10">"approval limit?"</text>
 
-      <rect x="34" y="118" width="132" height="6" rx="2" fill="#30363d"/>
-      <rect x="34" y="130" width="115" height="6" rx="2" fill="#30363d"/>
-      <rect x="34" y="142" width="128" height="6" rx="2" fill="#30363d"/>
-      <rect x="34" y="154" width="95" height="6" rx="2" fill="#30363d"/>
-      <!-- Chunk 2 highlight (overlapping) -->
-      <rect x="30" y="110" width="140" height="56" rx="3" fill="rgba(63,185,80,0.12)" stroke="#3fb950" stroke-width="1" stroke-dasharray="3,2"/>
-      <text x="175" y="142" fill="#3fb950" font-size="10">chunk 2</text>
-
-      <rect x="34" y="174" width="132" height="6" rx="2" fill="#30363d"/>
-      <rect x="34" y="186" width="108" height="6" rx="2" fill="#30363d"/>
-      <rect x="34" y="198" width="120" height="6" rx="2" fill="#30363d"/>
-      <rect x="34" y="210" width="85" height="6" rx="2" fill="#30363d"/>
-      <!-- Chunk 3 highlight -->
-      <rect x="30" y="166" width="140" height="56" rx="3" fill="rgba(188,140,255,0.12)" stroke="#bc8cff" stroke-width="1" stroke-dasharray="3,2"/>
-      <text x="175" y="198" fill="#bc8cff" font-size="10">chunk 3</text>
-
-      <!-- Overlap label -->
-      <text x="100" y="268" text-anchor="middle" fill="#8b949e" font-size="10">← overlap →</text>
-      <line x1="30" y1="273" x2="170" y2="273" stroke="#8b949e" stroke-width="0.5"/>
-
-      <!-- Arrow to Embedder -->
-      <line x1="202" y1="145" x2="248" y2="145" stroke="#30363d" stroke-width="2" class="flow-line"/>
-      <polygon points="248,140 258,145 248,150" fill="#30363d"/>
+      <line x1="112" y1="48" x2="145" y2="48" stroke="#58a6ff" stroke-width="2" class="flow-line2"/>
+      <polygon points="145,43 155,48 145,53" fill="#58a6ff"/>
 
       <!-- Embedder -->
-      <rect x="260" y="108" width="100" height="74" rx="8" fill="#0f3057" stroke="#1b6ca8"/>
-      <text x="310" y="138" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">Embedder</text>
-      <text x="310" y="154" text-anchor="middle" fill="#8b949e" font-size="10">nomic-embed</text>
-      <text x="310" y="168" text-anchor="middle" fill="#8b949e" font-size="10">text-v1.5</text>
+      <rect x="157" y="30" width="90" height="36" rx="6" fill="#1c2128" stroke="#30363d"/>
+      <text x="202" y="53" text-anchor="middle" fill="#cdd9e5" font-size="11">Similarity</text>
 
-      <!-- Arrow to ChromaDB -->
-      <line x1="362" y1="145" x2="400" y2="145" stroke="#30363d" stroke-width="2" class="flow-line"/>
-      <polygon points="400,140 410,145 400,150" fill="#30363d"/>
+      <line x1="249" y1="48" x2="280" y2="48" stroke="#30363d" stroke-width="1.5" class="flow-line2"/>
+      <polygon points="280,43 290,48 280,53" fill="#30363d"/>
 
-      <!-- ChromaDB box -->
-      <text x="490" y="22" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="bold">CHROMADB COLLECTION</text>
-      <rect x="415" y="30" width="150" height="230" rx="8" fill="#0d1117" stroke="#1b6ca8" stroke-width="1.5"/>
+      <!-- Vector DB -->
+      <rect x="292" y="20" width="90" height="56" rx="6" fill="#163a6b" stroke="#1b6ca8"/>
+      <text x="337" y="45" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="bold">Knowledge</text>
+      <text x="337" y="60" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="bold">Base</text>
+      <text x="337" y="73" text-anchor="middle" fill="#3fb950" font-size="10">✓ Clean</text>
 
-      <!-- Chunk rows inside ChromaDB -->
-      <!-- Chunk 1 row -->
-      <rect x="425" y="45" width="130" height="52" rx="4" fill="#1c2128" stroke="#58a6ff" stroke-width="1"/>
-      <text x="490" y="63" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="bold">chunk_1</text>
-      <text x="490" y="76" text-anchor="middle" fill="#8b949e" font-size="9">"The fraud policy requires..."</text>
-      <text x="490" y="90" text-anchor="middle" fill="#bc8cff" font-size="9">[0.23, -0.41, 0.87 ...]</text>
+      <line x1="384" y1="48" x2="416" y2="48" stroke="#30363d" stroke-width="1.5" class="flow-line2"/>
+      <polygon points="416,43 426,48 416,53" fill="#30363d"/>
 
-      <!-- Chunk 2 row -->
-      <rect x="425" y="105" width="130" height="52" rx="4" fill="#1c2128" stroke="#3fb950" stroke-width="1"/>
-      <text x="490" y="123" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="bold">chunk_2</text>
-      <text x="490" y="136" text-anchor="middle" fill="#8b949e" font-size="9">"Approvals above $5k need..."</text>
-      <text x="490" y="150" text-anchor="middle" fill="#bc8cff" font-size="9">[0.11, 0.67, -0.23 ...]</text>
+      <!-- Context chunks -->
+      <rect x="428" y="20" width="110" height="56" rx="6" fill="#1c2128" stroke="#30363d"/>
+      <text x="483" y="43" text-anchor="middle" fill="#cdd9e5" font-size="11">Context</text>
+      <text x="483" y="57" text-anchor="middle" fill="#8b949e" font-size="10">Legitimate policy</text>
+      <text x="483" y="70" text-anchor="middle" fill="#3fb950" font-size="10">docs retrieved</text>
 
-      <!-- Chunk 3 row -->
-      <rect x="425" y="165" width="130" height="52" rx="4" fill="#1c2128" stroke="#bc8cff" stroke-width="1"/>
-      <text x="490" y="183" text-anchor="middle" fill="#bc8cff" font-size="10" font-weight="bold">chunk_3</text>
-      <text x="490" y="196" text-anchor="middle" fill="#8b949e" font-size="9">"Exceptions require two..."</text>
-      <text x="490" y="210" text-anchor="middle" fill="#bc8cff" font-size="9">[-0.05, 0.44, 0.91 ...]</text>
+      <line x1="540" y1="48" x2="572" y2="48" stroke="#30363d" stroke-width="1.5" class="flow-line2"/>
+      <polygon points="572,43 582,48 572,53" fill="#30363d"/>
 
-      <text x="490" y="248" text-anchor="middle" fill="#8b949e" font-size="10">each chunk = text + vector + metadata</text>
+      <!-- LLM -->
+      <rect x="584" y="20" width="80" height="56" rx="6" fill="#1a3a5c" stroke="#1b6ca8"/>
+      <text x="624" y="54" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">AI</text>
 
-      <!-- Query path -->
-      <text x="700" y="22" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="bold">QUERY</text>
-      <rect x="625" y="30" width="150" height="36" rx="6" fill="#1c2128" stroke="#e3b341"/>
-      <text x="700" y="53" text-anchor="middle" fill="#e3b341" font-size="11">"approval threshold?"</text>
+      <line x1="666" y1="48" x2="698" y2="48" stroke="#3fb950" stroke-width="2" class="flow-line2"/>
+      <polygon points="698,43 708,48 698,53" fill="#3fb950"/>
 
-      <line x1="700" y1="68" x2="700" y2="100" stroke="#e3b341" stroke-width="1.5" class="flow-line"/>
-      <polygon points="695,100 700,112 705,100" fill="#e3b341"/>
+      <!-- Clean answer -->
+      <rect x="710" y="20" width="130" height="56" rx="6" fill="rgba(63,185,80,0.1)" stroke="#3fb950"/>
+      <text x="775" y="43" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">Correct Answer</text>
+      <text x="775" y="57" text-anchor="middle" fill="#8b949e" font-size="10">"Approval required</text>
+      <text x="775" y="70" text-anchor="middle" fill="#8b949e" font-size="10">for $10k+ transfers"</text>
 
-      <!-- Matched chunk -->
-      <rect x="625" y="114" width="150" height="52" rx="6" fill="rgba(63,185,80,0.12)" stroke="#3fb950" stroke-width="1.5"/>
-      <text x="700" y="133" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">✓ Best match</text>
-      <text x="700" y="148" text-anchor="middle" fill="#8b949e" font-size="10">chunk_2 · dist=0.18</text>
-      <text x="700" y="161" text-anchor="middle" fill="#8b949e" font-size="9">"Approvals above $5k need..."</text>
+      <!-- Separator -->
+      <line x1="10" y1="110" x2="840" y2="110" stroke="#30363d" stroke-width="1" stroke-dasharray="4,4"/>
 
-      <line x1="700" y1="168" x2="700" y2="196" stroke="#3fb950" stroke-width="1.5" class="flow-line"/>
-      <polygon points="695,196 700,208 705,196" fill="#3fb950"/>
+      <!-- Attack flow: bottom row -->
+      <text x="10" y="132" fill="#f85149" font-size="11" font-weight="bold">ATTACK FLOW — DATA POISONING</text>
 
-      <!-- LLM box -->
-      <rect x="625" y="210" width="150" height="46" rx="6" fill="#0f3057" stroke="#1b6ca8"/>
-      <text x="700" y="231" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">LLM</text>
-      <text x="700" y="248" text-anchor="middle" fill="#8b949e" font-size="10">receives chunk, not full doc</text>
+      <!-- Poisoned doc injected into DB -->
+      <rect x="10" y="200" width="120" height="40" rx="4" fill="rgba(248,81,73,0.1)" stroke="#f85149" stroke-width="1.5"/>
+      <text x="70" y="218" text-anchor="middle" fill="#f85149" font-size="10" font-weight="bold">FAKE DOCUMENT</text>
+      <text x="70" y="232" text-anchor="middle" fill="#f85149" font-size="10">"No approval needed"</text>
 
-      <!-- Arrow from ChromaDB to query area -->
-      <line x1="567" y1="130" x2="623" y2="130" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,3"/>
-      <polygon points="618,125 628,130 618,135" fill="#30363d"/>
+      <!-- Attacker arrow to DB -->
+      <line x1="132" y1="220" x2="315" y2="155" stroke="#f85149" stroke-width="2" stroke-dasharray="5,3" class="attack-blink"/>
+      <polygon points="315,160 322,148 327,160" fill="#f85149"/>
+      <text x="200" y="200" fill="#f85149" font-size="11" font-weight="bold">☠ attacker injects</text>
+
+      <!-- Same query -->
+      <rect x="10" y="142" width="100" height="36" rx="6" fill="#0f3057" stroke="#1b6ca8"/>
+      <text x="60" y="162" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="bold">Same Query</text>
+      <text x="60" y="175" text-anchor="middle" fill="#8b949e" font-size="10">"approval limit?"</text>
+
+      <line x1="112" y1="160" x2="145" y2="160" stroke="#58a6ff" stroke-width="2" class="flow-line2"/>
+      <polygon points="145,155 155,160 145,165" fill="#58a6ff"/>
+
+      <rect x="157" y="142" width="90" height="36" rx="6" fill="#1c2128" stroke="#30363d"/>
+      <text x="202" y="165" text-anchor="middle" fill="#cdd9e5" font-size="11">Similarity</text>
+
+      <line x1="249" y1="160" x2="280" y2="160" stroke="#30363d" stroke-width="1.5" class="flow-line2"/>
+      <polygon points="280,155 290,160 280,165" fill="#30363d"/>
+
+      <!-- Poisoned DB -->
+      <rect x="292" y="130" width="90" height="56" rx="6" fill="rgba(248,81,73,0.1)" stroke="#f85149" stroke-width="1.5"/>
+      <text x="337" y="155" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">Knowledge</text>
+      <text x="337" y="169" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">Base</text>
+      <text x="337" y="182" text-anchor="middle" fill="#f85149" font-size="10">☠ Poisoned</text>
+
+      <line x1="384" y1="160" x2="416" y2="160" stroke="#f85149" stroke-width="2" class="flow-line2"/>
+      <polygon points="416,155 426,160 416,165" fill="#f85149"/>
+
+      <!-- Poisoned context -->
+      <rect x="428" y="130" width="110" height="56" rx="6" fill="rgba(248,81,73,0.1)" stroke="#f85149"/>
+      <text x="483" y="153" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">Context</text>
+      <text x="483" y="167" text-anchor="middle" fill="#f85149" font-size="10">"No approval</text>
+      <text x="483" y="180" text-anchor="middle" fill="#f85149" font-size="10">needed" ← #1</text>
+
+      <line x1="540" y1="160" x2="572" y2="160" stroke="#f85149" stroke-width="2" class="flow-line2"/>
+      <polygon points="572,155 582,160 572,165" fill="#f85149"/>
+
+      <!-- LLM -->
+      <rect x="584" y="130" width="80" height="56" rx="6" fill="#1a3a5c" stroke="#1b6ca8"/>
+      <text x="624" y="161" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">AI</text>
+      <text x="624" y="177" text-anchor="middle" fill="#8b949e" font-size="10">same model</text>
+
+      <line x1="666" y1="160" x2="698" y2="160" stroke="#f85149" stroke-width="2" class="flow-line2"/>
+      <polygon points="698,155 708,160 698,165" fill="#f85149"/>
+
+      <!-- Poisoned answer -->
+      <rect x="710" y="130" width="130" height="56" rx="6" fill="rgba(248,81,73,0.12)" stroke="#f85149"/>
+      <text x="775" y="153" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">☠ Wrong Answer</text>
+      <text x="775" y="167" text-anchor="middle" fill="#f85149" font-size="10">"No approval</text>
+      <text x="775" y="180" text-anchor="middle" fill="#f85149" font-size="10">required"</text>
     </svg>
   </div>
 
-  <!-- Topology: docs → embedder → Vector DB cylinder → query → results -->
-  <div class="section-label">ChromaDB Architecture + Attack Path</div>
+  <!-- Attack mechanics diagram (from old module 03) -->
+  <div class="section-label">How the Attack Works in the Knowledge Base</div>
   <div class="topology">
     <svg viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace">
       <!-- Legitimate documents -->
-      <text x="10" y="30" fill="#8b949e" font-size="11" font-weight="bold">LEGITIMATE DOCS</text>
+      <text x="10" y="30" fill="#8b949e" font-size="11" font-weight="bold">YOUR REAL DOCUMENTS</text>
       <rect x="10" y="40" width="120" height="26" rx="4" fill="#1c2128" stroke="#30363d"/>
       <text x="70" y="57" text-anchor="middle" fill="#cdd9e5" font-size="11">Fraud policy doc</text>
       <rect x="10" y="72" width="120" height="26" rx="4" fill="#1c2128" stroke="#30363d"/>
@@ -171,34 +185,25 @@
       <text x="70" y="121" text-anchor="middle" fill="#cdd9e5" font-size="11">Auth guidelines</text>
 
       <!-- Poisoned document -->
-      <text x="10" y="155" fill="#f85149" font-size="11" font-weight="bold">POISONED DOC</text>
+      <text x="10" y="155" fill="#f85149" font-size="11" font-weight="bold">ATTACKER'S FAKE DOCUMENT</text>
       <rect x="10" y="165" width="120" height="40" rx="4" fill="rgba(248,81,73,0.1)" stroke="#f85149" stroke-width="1.5"/>
       <text x="70" y="181" text-anchor="middle" fill="#f85149" font-size="10">"No approval needed</text>
       <text x="70" y="194" text-anchor="middle" fill="#f85149" font-size="10">for any transfer"</text>
 
-      <!-- Arrows to Embedder -->
+      <!-- Arrows to knowledge base -->
       <line x1="132" y1="55" x2="185" y2="110" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
       <line x1="132" y1="85" x2="185" y2="118" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
       <line x1="132" y1="117" x2="185" y2="126" stroke="#30363d" stroke-width="1.5" class="flow-line"/>
       <line x1="132" y1="185" x2="185" y2="138" stroke="#f85149" stroke-width="1.5" class="flow-line"/>
 
-      <!-- Embedder -->
-      <rect x="188" y="88" width="110" height="70" rx="8" fill="#0f3057" stroke="#1b6ca8"/>
-      <text x="243" y="118" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">Embedder</text>
-      <text x="243" y="134" text-anchor="middle" fill="#8b949e" font-size="11">→ vectors</text>
-
-      <!-- Arrow to ChromaDB -->
-      <line x1="300" y1="123" x2="340" y2="123" stroke="#30363d" stroke-width="2" class="flow-line"/>
-      <polygon points="340,118 350,123 340,128" fill="#30363d"/>
-
-      <!-- ChromaDB cylinder -->
+      <!-- Knowledge Base cylinder -->
       <ellipse cx="420" cy="80" rx="60" ry="14" fill="#163a6b" stroke="#1b6ca8"/>
       <rect x="360" y="80" width="120" height="120" fill="#163a6b" stroke="none"/>
       <ellipse cx="420" cy="200" rx="60" ry="14" fill="#1a3a5c" stroke="#1b6ca8"/>
       <rect x="360" y="80" width="120" height="120" fill="none" stroke="#1b6ca8" stroke-width="1.5"/>
-      <text x="420" y="135" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">ChromaDB</text>
-      <text x="420" y="152" text-anchor="middle" fill="#8b949e" font-size="11">HNSW index</text>
-      <text x="420" y="168" text-anchor="middle" fill="#8b949e" font-size="11">N vectors stored</text>
+      <text x="420" y="135" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">Knowledge</text>
+      <text x="420" y="152" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">Base</text>
+      <text x="420" y="168" text-anchor="middle" fill="#8b949e" font-size="11">All docs stored here</text>
 
       <!-- Query comes in from bottom -->
       <text x="420" y="240" text-anchor="middle" fill="#e3b341" font-size="11" font-weight="bold">QUERY: "large transfer approval?"</text>
@@ -216,52 +221,63 @@
       <!-- Result boxes -->
       <text x="570" y="38" fill="#8b949e" font-size="11" font-weight="bold">TOP RESULTS</text>
       <rect x="565" y="50" width="145" height="38" rx="5" fill="rgba(248,81,73,0.12)" stroke="#f85149" stroke-width="1.5"/>
-      <text x="638" y="68" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">#1 dist=0.12 ← POISON</text>
+      <text x="638" y="68" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">#1 ← ATTACKER'S DOC</text>
       <text x="638" y="82" text-anchor="middle" fill="#f85149" font-size="10">"No approval needed..."</text>
 
       <rect x="565" y="96" width="145" height="38" rx="5" fill="#1c2128" stroke="#30363d"/>
-      <text x="638" y="113" text-anchor="middle" fill="#8b949e" font-size="11">#2 dist=0.44</text>
+      <text x="638" y="113" text-anchor="middle" fill="#8b949e" font-size="11">#2 Your real policy</text>
       <text x="638" y="127" text-anchor="middle" fill="#8b949e" font-size="10">Approval process doc</text>
 
       <rect x="565" y="142" width="145" height="38" rx="5" fill="#1c2128" stroke="#30363d"/>
-      <text x="638" y="159" text-anchor="middle" fill="#8b949e" font-size="11">#3 dist=0.61</text>
+      <text x="638" y="159" text-anchor="middle" fill="#8b949e" font-size="11">#3 Your real policy</text>
       <text x="638" y="173" text-anchor="middle" fill="#8b949e" font-size="10">Auth guidelines</text>
 
-      <text x="638" y="210" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold">⚠ LLM receives poisoned context</text>
+      <text x="638" y="210" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold">⚠ AI reads the attacker's document</text>
     </svg>
   </div>
 
   <div class="callouts">
     <div class="callout danger">
-      <div class="callout-title">🔴 Write Access = Game Over</div>
-      <p>Anyone who can add documents to your vector database controls what your LLM knows. This includes: open document upload endpoints, CI/CD pipelines that ingest external content, web scrapers that add pages to a knowledge base, and any user-submitted content that gets embedded and stored.</p>
+      <div class="callout-title">🔴 Anyone with write access can poison your AI</div>
+      <p>Anyone who can add documents to your knowledge base controls what your AI believes. This includes open document upload features, automated pipelines that import external content, and any user-submitted content that gets stored. Write access to the knowledge base is the same as write access to your AI's answers.</p>
     </div>
     <div class="callout warning">
-      <div class="callout-title">⚠️ Low Attack Distance Wins</div>
-      <p>The poisoned document in this lab scores distance <code>0.12</code>. The next legitimate document scores <code>0.44</code>. The LLM only sees the top 2 results — so the legitimate document gets displaced by 4x. The attacker doesn't need a perfect match, just a better one.</p>
+      <div class="callout-title">⚠️ The AI has no way to spot the fake</div>
+      <p>The AI receives the attacker's document as the top result. It has no signal that the content was injected. It treats "No approval needed for any transfer" as authoritative policy — because that is what was retrieved. The same model, same application code, same user query — but a different answer because the knowledge base was changed.</p>
     </div>
     <div class="callout info">
-      <div class="callout-title">💡 Defense: Document Provenance Tracking</div>
-      <p>Store the source, timestamp, and author of every embedded document. Before including retrieved chunks in a prompt, check if the source is trusted. ChromaDB metadata fields make this straightforward.</p>
+      <div class="callout-title">💡 How to defend</div>
+      <p>1. <strong>Control who can add documents</strong> — treat knowledge base write access like database write access. Authenticate, authorize, and audit every addition. 2. <strong>Track document sources</strong> — record where every document came from and when. Before using a retrieved document, check whether its source is trusted. 3. <strong>Audit your retrieval results</strong> — log every document the AI retrieves and alert on unexpected sources appearing at the top of results.</p>
     </div>
   </div>
 
   <div class="run-section">
-    <div class="section-label">Lab Exercise</div>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>03_vector_db/01_chromadb_basics.py</code> — populates ChromaDB, queries it normally, then injects a poisoned document and queries again.</p>
-    <button class="run-btn" onclick="runLab('03','03')">▶ Run Lab</button>
+    <div class="section-label">Lab Exercise — Part 1: Knowledge Base Basics</div>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>03_vector_db/01_chromadb_basics.py</code> — populates the knowledge base, queries it normally, then injects a fake document and queries again to show how the results change.</p>
+    <button class="run-btn" onclick="runLab('03','03')">▶ Run Part 1</button>
     <div class="terminal" id="term-03">
       <div class="term-header"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-label" id="lbl-03">waiting</span></div>
       <div class="term-body" id="body-03"></div>
     </div>
   </div>
 
+  <div class="run-section">
+    <div class="section-label">Lab Exercise — Part 2: Full RAG Pipeline Attack</div>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>04_rag_basic/01_rag_basic.py</code> — builds a complete AI question-answering pipeline, asks a question normally, then injects a fake document and re-asks. Watch the AI's answer change.</p>
+    <button class="run-btn" onclick="runLab('04','04')">▶ Run Part 2</button>
+    <div class="terminal" id="term-04">
+      <div class="term-header"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-label" id="lbl-04">waiting</span></div>
+      <div class="term-body" id="body-04"></div>
+    </div>
+  </div>
+
   <div class="section-label">Key Takeaways</div>
   <div class="takeaways">
-    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Vector DBs have no built-in trust model.</strong> All documents are equal. The nearest one wins, regardless of source.</p></div>
-    <div class="takeaway"><div class="takeaway-num">2</div><p><strong>The attack works by mirroring query vocabulary.</strong> Attackers don't need to know exact queries — they model likely user intents and optimize document text toward those.</p></div>
-    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>Distance thresholds are a partial defense.</strong> Rejecting results above a distance cutoff reduces the attack surface but doesn't eliminate it — a well-crafted poisoned document will score below the threshold.</p></div>
-    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Access control on ingestion is the primary defense.</strong> Treat your vector database write path like a database write path — authenticate, authorize, and audit every insertion.</p></div>
+    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Your knowledge base is now a security boundary.</strong> Connecting the AI to your documents gives it power — but it also means the knowledge base is now an attack target. Treat it with the same controls you apply to any critical database.</p></div>
+    <div class="takeaway"><div class="takeaway-num">2</div><p><strong>The highest-scoring document always wins.</strong> There is no built-in trust ranking. A well-crafted fake document will always outrank your real content on the queries it was designed to match.</p></div>
+    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>The attack changes no application code.</strong> Same AI model. Same application. Same user question. Only the contents of the knowledge base changed. This makes the attack extremely difficult to detect through code review alone.</p></div>
+    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Access control on ingestion is the primary defense.</strong> Who can add documents to your knowledge base? If the answer is "anyone with access to the upload feature," your AI's answers can be controlled by an attacker.</p></div>
+    <div class="takeaway"><div class="takeaway-num">5</div><p><strong>Know where your AI's information comes from.</strong> Log the source of every document the AI retrieves. Unexpected documents appearing at the top of results are a signal that something has changed — and may indicate an attack.</p></div>
   </div>
 </div>
 <script src="/static/lab.js"></script>

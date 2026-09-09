@@ -50,11 +50,11 @@
     <div class="hero-eyebrow">GenAI App Security</div>
     <h1 class="hero-title">GenAI Security<br/><span>Attack &amp; Defense Workshop</span></h1>
     <p class="hero-sub">
-      A hands-on lab environment built to learn and demonstrate GenAI security concepts.
-      Each module covers one attack surface, shows a live exploit, and demonstrates how to defend against it.
+      A hands-on lab environment for learning and demonstrating AI security risks.
+      Each module explains one risk, shows a live demonstration, and connects it to real-world impact.
     </p>
     <div class="hero-meta">
-      <div class="hero-stat"><strong>11</strong> modules</div>
+      <div class="hero-stat"><strong>10</strong> modules</div>
       <div class="hero-stat"><strong>100%</strong> local — no cloud</div>
     </div>
   </div>
@@ -68,7 +68,7 @@
         <span class="mod-tag foundations">Foundations</span>
       </div>
       <div class="mod-title">Tokenization</div>
-      <div class="mod-desc">How LLMs split text into fragments. The root cause of token smuggling and filter bypass attacks.</div>
+      <div class="mod-desc">How AI models read text — not as words but as fragments. The hidden reason why some security filters fail.</div>
       <div class="mod-scripts">01_llm_basics/01_tokenization.py</div>
     </a>
 
@@ -78,7 +78,7 @@
         <span class="mod-tag foundations">Foundations</span>
       </div>
       <div class="mod-title">Embeddings &amp; Similarity</div>
-      <div class="mod-desc">Converting text into coordinates in meaning-space. The basis of RAG, semantic search, and data poisoning.</div>
+      <div class="mod-desc">How AI converts meaning into numbers — and how attackers exploit that to manipulate what the AI retrieves.</div>
       <div class="mod-scripts">02_embeddings/01_similarity.py</div>
     </a>
 
@@ -87,49 +87,49 @@
         <span class="mod-num">03</span>
         <span class="mod-tag attacks">Attacks</span>
       </div>
-      <div class="mod-title">Vector Database &amp; Data Poisoning</div>
-      <div class="mod-desc">ChromaDB internals and how an attacker injects documents to manipulate retrieval results.</div>
-      <div class="mod-scripts">03_vector_db/01_chromadb_basics.py</div>
+      <div class="mod-title">RAG &amp; Data Poisoning</div>
+      <div class="mod-desc">How AI connects to company knowledge bases to answer questions — and how an attacker poisons that knowledge to control what the AI says.</div>
+      <div class="mod-scripts">03_vector_db/01_chromadb_basics.py · 04_rag_basic/01_rag_basic.py</div>
     </a>
 
     <a class="mod-card" href="/module/04">
       <div class="mod-card-head">
         <span class="mod-num">04</span>
-        <span class="mod-tag attacks">Attacks</span>
+        <span class="mod-tag attacks">Attacks + Defense</span>
       </div>
-      <div class="mod-title">RAG Pipeline</div>
-      <div class="mod-desc">Full Retrieval-Augmented Generation pipeline with live data poisoning attack demonstration.</div>
-      <div class="mod-scripts">04_rag_basic/01_rag_basic.py</div>
+      <div class="mod-title">AI Agents &amp; Indirect Injection</div>
+      <div class="mod-desc">When AI can take actions — reading emails, calling APIs, moving money — a hidden instruction in a document can hijack those actions.</div>
+      <div class="mod-scripts">05_agents/01_agent_basics.py · 02_agent_defended.py</div>
     </a>
 
     <a class="mod-card" href="/module/05">
       <div class="mod-card-head">
         <span class="mod-num">05</span>
-        <span class="mod-tag attacks">Attacks + Defense</span>
+        <span class="mod-tag attacks">Attacks</span>
       </div>
-      <div class="mod-title">Agents &amp; Indirect Prompt Injection</div>
-      <div class="mod-desc">LLM tool-use loop, indirect injection through documents, and code-level defenses.</div>
-      <div class="mod-scripts">05_agents/01_agent_basics.py · 02_agent_defended.py</div>
+      <div class="mod-title">Jailbreaks</div>
+      <div class="mod-desc">Techniques that trick AI into ignoring its own safety rules — demonstrated live with seven different approaches.</div>
+      <div class="mod-scripts">06_jailbreaks/01_jailbreak_lab.py</div>
     </a>
 
     <a class="mod-card" href="/module/06">
       <div class="mod-card-head">
         <span class="mod-num">06</span>
-        <span class="mod-tag attacks">Attacks</span>
+        <span class="mod-tag defenses">Defenses</span>
       </div>
-      <div class="mod-title">Jailbreaks</div>
-      <div class="mod-desc">7 jailbreak techniques tested live — fictional framing, token smuggling, multi-turn escalation.</div>
-      <div class="mod-scripts">06_jailbreaks/01_jailbreak_lab.py</div>
+      <div class="mod-title">Guardrails</div>
+      <div class="mod-desc">A layered defense system that filters what goes into the AI and what comes out — blocking attacks before they reach the model.</div>
+      <div class="mod-scripts">07_guardrails/01_guardrails.py</div>
     </a>
 
     <a class="mod-card" href="/module/07">
       <div class="mod-card-head">
         <span class="mod-num">07</span>
-        <span class="mod-tag defenses">Defenses</span>
+        <span class="mod-tag advanced">Advanced</span>
       </div>
-      <div class="mod-title">Guardrails</div>
-      <div class="mod-desc">Multi-layer defense pipeline: regex, PII detection, LLM-as-judge intent classifier, output scanning.</div>
-      <div class="mod-scripts">07_guardrails/01_guardrails.py</div>
+      <div class="mod-title">Training Poisoning</div>
+      <div class="mod-desc">What happens when an attacker corrupts the data used to train or customize an AI model — poisoning the model itself, not just its inputs.</div>
+      <div class="mod-scripts">08_fine-tuning/01_finetune_demo.py</div>
     </a>
 
     <a class="mod-card" href="/module/08">
@@ -137,42 +137,29 @@
         <span class="mod-num">08</span>
         <span class="mod-tag advanced">Advanced</span>
       </div>
-      <div class="mod-title">Fine-tuning &amp; Training Poisoning</div>
-      <div class="mod-desc">LoRA fine-tuning on GPT-2 with 33% poisoned training data — watch evil.com appear in responses.</div>
-      <div class="mod-scripts">08_fine-tuning/01_finetune_demo.py</div>
+      <div class="mod-title">MCP Server Security</div>
+      <div class="mod-desc">The new standard for connecting AI to company tools and data — and the ten security risks that come with it.</div>
+      <div class="mod-scripts">09_mcp_security/01_mcp_demo.py</div>
     </a>
 
     <a class="mod-card" href="/module/09">
       <div class="mod-card-head">
         <span class="mod-num">09</span>
-        <span class="mod-tag advanced">Advanced</span>
-        <span class="new-badge">NEW</span>
+        <span class="mod-tag defenses">Enterprise Defense</span>
       </div>
-      <div class="mod-title">MCP Server Security</div>
-      <div class="mod-desc">Model Context Protocol architecture, tool poisoning attacks, and defense through tool scoping.</div>
-      <div class="mod-scripts">09_mcp_security/01_mcp_demo.py</div>
+      <div class="mod-title">AI Gateway Security</div>
+      <div class="mod-desc">One front door for all AI traffic in the organization — providing visibility, cost control, and the security layer most deployments are missing.</div>
+      <div class="mod-scripts">10_ai_gateway/01_gateway_demo.py</div>
     </a>
 
     <a class="mod-card" href="/module/10">
       <div class="mod-card-head">
         <span class="mod-num">10</span>
-        <span class="mod-tag defenses">Enterprise Defense</span>
-        <span class="new-badge">NEW</span>
-      </div>
-      <div class="mod-title">AI Gateway Security</div>
-      <div class="mod-desc">Enterprise AI gateway topology, model routing, guardrails-as-infrastructure with Runtime Security (API).</div>
-      <div class="mod-scripts">10_ai_gateway/01_gateway_demo.py</div>
-    </a>
-
-    <a class="mod-card" href="/module/11">
-      <div class="mod-card-head">
-        <span class="mod-num">11</span>
         <span class="mod-tag advanced">Advanced</span>
         <span class="new-badge">NEW</span>
       </div>
       <div class="mod-title">AI Model Supply Chain</div>
-      <div class="mod-desc">How specialized AI models are downloaded from public hubs and deployed without security review — and what that means for your production environment.</div>
-      <div class="mod-scripts">No script — live ModelScan walkthrough</div>
+      <div class="mod-desc">Specialized AI models downloaded from public websites and deployed without security review — a threat most security teams cannot see.</div>
     </a>
 
     <a class="mod-card" href="/module/rw">
@@ -181,7 +168,7 @@
         <span class="mod-tag advanced">Real World</span>
       </div>
       <div class="mod-title">Your Copilot Has the Same Attack Surface</div>
-      <div class="mod-desc">Maps every lab attack to Microsoft 365 Copilot — where it lands, what the attacker does, and the business impact.</div>
+      <div class="mod-desc">Maps every attack shown in this lab to Microsoft 365 Copilot — where it lands, what the attacker does, and the business impact.</div>
     </a>
 
   </div>

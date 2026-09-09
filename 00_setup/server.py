@@ -37,7 +37,6 @@ PAGES = {
     "08": BASE_DIR / "pages" / "module08_finetune.html",
     "09": BASE_DIR / "pages" / "module09_mcp.html",
     "10": BASE_DIR / "pages" / "module10_gateway.html",
-    "11": BASE_DIR / "pages" / "module11_model_supply_chain.html",
     "rw": BASE_DIR / "pages" / "module_realworld.html",
 }
 

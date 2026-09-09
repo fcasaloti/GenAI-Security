@@ -212,7 +212,6 @@
     <a class="nav-mod-link" href="/module/08">08</a>
     <a class="nav-mod-link" href="/module/09">09</a>
     <a class="nav-mod-link" href="/module/10">10</a>
-    <a class="nav-mod-link" href="/module/11">11</a>
     <a class="nav-mod-link" href="/module/rw">Real World</a>
   </div>
 </nav>
@@ -223,39 +222,40 @@
   <div class="module-badge">MODULE 01</div>
   <h1 class="module-title">Tokenization</h1>
   <p class="module-subtitle">
-    LLMs don't read words — they read <em>tokens</em>. Understanding how text is
-    fragmented before reaching the model is the foundation of every prompt injection,
-    filter bypass, and token manipulation attack.
+    AI models do not read words. They read small fragments called <em>tokens</em>.
+    This small detail has big security consequences — it is the root cause of filter
+    bypass attacks and cost-amplification attacks.
   </p>
 
   <!-- ── Concept cards ── -->
-  <div class="section-label">Core Concepts</div>
+  <div class="section-label">Key Concepts</div>
   <div class="cards">
     <div class="card">
       <div class="card-icon">✂️</div>
       <div class="card-title">What is a token?</div>
       <div class="card-body">
-        A token is a text fragment — roughly a word, a punctuation mark, or a common
-        sub-word. The model never sees full words; it sees integer IDs that index
-        into a 100,000-entry vocabulary table.
+        Before the AI reads anything, your text is cut into small pieces — tokens.
+        A token is roughly a word or part of a word. The AI works with these pieces,
+        not with the original text. Security filters that check your text may miss
+        attacks that slip through the cracks between pieces.
       </div>
     </div>
     <div class="card">
       <div class="card-icon">📐</div>
-      <div class="card-title">Byte-Pair Encoding</div>
+      <div class="card-title">Common words, fewer pieces</div>
       <div class="card-body">
-        Common fragments ("the", "ing", "tion") get a single token ID.
-        Rare fragments split into multiple tokens. "Felipe" = 2 tokens.
-        "SQL" = 1 token because it appears often in training data.
+        Common words get one token. Rare or unusual words get split into several.
+        This means text with unusual characters can balloon in size — costing more
+        and consuming more of the AI's attention than it looks like it should.
       </div>
     </div>
     <div class="card">
       <div class="card-icon">🔢</div>
-      <div class="card-title">Why it matters</div>
+      <div class="card-title">Why it matters for security</div>
       <div class="card-body">
-        Everything the model processes — your system prompt, user input, tool results —
-        is first tokenized. Context windows, cost, and security filters all operate
-        at the token level, not the character or word level.
+        Every piece of text the AI processes — your instructions, the user's message,
+        results from tools — gets tokenized the same way. The AI has no built-in way
+        to tell which tokens came from a trusted source and which came from an attacker.
       </div>
     </div>
   </div>
@@ -282,34 +282,33 @@
   <div class="section-label">Security Implications</div>
 
   <div class="callout warning">
-    <div class="callout-title">⚠️ Token Smuggling</div>
+    <div class="callout-title">⚠️ Filter Bypass</div>
     <p>
-      A naive content filter searching for the string <code>ignore</code> works on
-      decoded text. But in crafted context, tokenization boundaries can shift —
-      splitting a banned word across token boundaries. Filters must operate on
-      <strong>decoded output</strong>, not raw token IDs, and should be redundant
-      at multiple layers.
+      A content filter that searches for a banned word in plain text can be tricked
+      by an attacker who splits that word across token boundaries using unusual spacing
+      or characters. The word looks different to the filter but means the same thing
+      to the AI. Filters must work at multiple layers — not just on the raw text.
     </p>
   </div>
 
   <div class="callout danger">
-    <div class="callout-title">🔴 Cost Amplification Attack</div>
+    <div class="callout-title">🔴 Cost Inflation Attack</div>
     <p>
-      Rare Unicode, unusual whitespace, or repeated rare sequences produce far more
-      tokens per character than normal text. An attacker can craft inputs that
-      exhaust your context window or inflate API costs — a token-level
-      denial-of-service. Always validate and cap input length <em>before</em>
-      tokenizing.
+      Unusual characters and repeated rare sequences create far more tokens per
+      character than normal text. An attacker can craft a short-looking message that
+      consumes enormous AI resources and inflates your API bill — a low-effort,
+      high-impact denial-of-service. Always set input length limits before the AI
+      ever sees the text.
     </p>
   </div>
 
   <div class="callout info">
-    <div class="callout-title">💡 Real-world connection</div>
+    <div class="callout-title">💡 The root of most AI attacks</div>
     <p>
-      Every prompt injection in modules 03–07 works because the model cannot
-      distinguish between developer instructions and user text at the token level —
-      they are all just integers in a sequence. Tokenization is where that
-      equivalence begins.
+      Every prompt injection attack in modules 02–06 works for the same reason:
+      the AI cannot tell the difference between your instructions and an attacker's
+      instructions — they all look the same at the token level. Tokenization is
+      where that equivalence begins.
     </p>
   </div>
 
@@ -341,30 +340,26 @@
     <div class="takeaway-item">
       <div class="takeaway-num">1</div>
       <div class="takeaway-text">
-        <strong>Token count ≠ word count.</strong> "Felipe" costs 2 tokens. Ignoring this
-        leads to context window overflows and inaccurate cost estimates.
+        <strong>Short text can be expensive.</strong> Text with unusual characters can generate many more AI processing units (tokens) than it appears to. Ignoring this leads to runaway costs and capacity issues.
       </div>
     </div>
     <div class="takeaway-item">
       <div class="takeaway-num">2</div>
       <div class="takeaway-text">
-        <strong>Security filters must work on decoded text.</strong> Checking raw token IDs
-        is fragile — the same word can tokenize differently in different contexts.
+        <strong>Content filters can be fooled by fragmentation.</strong> An attacker can split a banned phrase across fragment boundaries so that a simple text search misses it. Layered, redundant checks are essential.
       </div>
     </div>
     <div class="takeaway-item">
       <div class="takeaway-num">3</div>
       <div class="takeaway-text">
-        <strong>All text — system prompt, user input, tool output — becomes the same token sequence.</strong>
-        The model has no built-in way to know which tokens came from a trusted source.
-        This is the root cause of prompt injection.
+        <strong>The AI treats all text the same.</strong> Your security instructions and an attacker's injected commands look identical to the AI. There is no built-in trust hierarchy. This is why all subsequent attacks in this lab work.
       </div>
     </div>
     <div class="takeaway-item">
       <div class="takeaway-num">4</div>
       <div class="takeaway-text">
-        <strong>Input validation must happen before tokenization.</strong>
-        Length limits, character allow-lists, and rate limiting are your first line of defense.
+        <strong>Validate input before the AI ever sees it.</strong>
+        Length limits, allowed character sets, and rate limiting are your first line of defense — and they must run before the AI processes anything.
       </div>
     </div>
   </div>

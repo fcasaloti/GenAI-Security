@@ -2,24 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Module 06 — Jailbreaks | GenAI App Security</title>
+  <title>Module 06 — Guardrails | GenAI App Security</title>
   <link rel="stylesheet" href="/static/base.css" />
   <style>
-    @keyframes bounce { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,-10px)} }
-    @keyframes penetrate { 0%{transform:translate(0,0);opacity:1} 100%{transform:translate(160px,-30px);opacity:0.3} }
-    @keyframes shield-shake { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-3px,0)} 75%{transform:translate(3px,0)} }
-    .bounce1 { animation: bounce 1.8s ease-in-out infinite; }
-    .bounce2 { animation: bounce 2.1s ease-in-out 0.4s infinite; }
-    .bounce3 { animation: bounce 1.6s ease-in-out 0.8s infinite; }
-    .penetrate1 { animation: penetrate 3s ease-in-out 1s infinite; }
-    .escalate { animation: bounce 2.5s ease-in-out infinite; }
+    .flow-line { stroke-dasharray:6 4; animation:dash 1.2s linear infinite; }
+    @keyframes dash { to { stroke-dashoffset:-20; } }
+    @keyframes block-flash { 0%,100%{opacity:0} 40%,60%{opacity:1} }
+    .block-indicator { animation: block-flash 2s ease-in-out infinite; }
+    @keyframes pulse-green { 0%,100%{opacity:1} 50%{opacity:0.6} }
+    .pass-indicator { animation: pulse-green 2s ease-in-out infinite; }
   </style>
 </head>
 <body>
 <nav>
   <span class="nav-logo">GenAI App Security Lab</span>
   <span class="nav-sep">/</span>
-  <span class="nav-crumb">Module 06 — Jailbreaks</span>
+  <span class="nav-crumb">Module 06 — Guardrails</span>
   <div class="nav-modules">
     <a class="nav-mod-link" href="/">Home</a>
     <a class="nav-mod-link" href="/module/01">01</a>
@@ -32,110 +30,293 @@
     <a class="nav-mod-link" href="/module/08">08</a>
     <a class="nav-mod-link" href="/module/09">09</a>
     <a class="nav-mod-link" href="/module/10">10</a>
-    <a class="nav-mod-link" href="/module/11">11</a>
     <a class="nav-mod-link" href="/module/rw">Real World</a>
   </div>
 </nav>
 <div class="page">
   <div class="module-badge">Module 06</div>
-  <h1 class="module-title">Jailbreaks</h1>
-  <p class="module-subtitle">Jailbreaks attempt to bypass an LLM's safety training through conversation. Unlike prompt injection (which targets the system prompt), jailbreaks exploit the model's own learned behaviors — fictional framing, gradual escalation, authority claims, and context manipulation.</p>
+  <h1 class="module-title">Guardrails</h1>
+  <p class="module-subtitle">Guardrails are security controls that run independently of the AI model — checking what goes in and what comes out. They do not trust the model to be safe on its own. They intercept harmful requests before the AI sees them, strip private data before it leaves your organization, and scan responses before users see them.</p>
 
-  <div class="section-label">Core Concepts</div>
+  <div class="section-label">Key Concepts</div>
   <div class="cards">
-    <div class="card"><div class="card-icon">🛡️</div><div class="card-title">Safety Training</div><div class="card-body">Modern LLMs are RLHF-trained to refuse harmful requests. This is behavioral — baked into the weights — not a system-prompt rule. Jailbreaks try to find the edge of this training.</div></div>
-    <div class="card"><div class="card-icon">🎭</div><div class="card-title">Fictional Framing</div><div class="card-body">"Write a story where a character explains how to..." The model may comply because it reframes the request as fiction — but the instructions are real once generated.</div></div>
-    <div class="card"><div class="card-icon">📈</div><div class="card-title">Multi-Turn Escalation</div><div class="card-body">Start with benign requests, gradually escalate. The model's context window creates momentum — having answered step N, it's more likely to answer step N+1. Each message normalizes the next.</div></div>
+    <div class="card"><div class="card-icon">🔍</div><div class="card-title">Input scanning</div><div class="card-body">Every message is checked before it is sent to the AI. Pattern matching catches known attack phrases and injection attempts. This is fast and cheap — it runs in milliseconds and costs nothing compared to an AI call.</div></div>
+    <div class="card"><div class="card-icon">🔒</div><div class="card-title">PII detection and redaction</div><div class="card-body">Credit card numbers, Social Security numbers, email addresses, phone numbers, and account numbers are detected and removed before the text reaches the AI model. The model never sees the raw sensitive data and cannot leak what it never received.</div></div>
+    <div class="card"><div class="card-icon">⚖️</div><div class="card-title">AI-as-judge</div><div class="card-body">A second, smaller AI call classifies the intent of a message: is it benign, an injection attempt, sensitive, or off-topic? More accurate than pattern matching alone — but slower and costs more. Run it last, only if the cheaper checks pass.</div></div>
   </div>
 
-  <!-- Jailbreak topology -->
-  <div class="section-label">Attack Techniques vs. Safety Shield</div>
+  <!-- Guardrails pipeline topology -->
+  <div class="section-label">Defense-in-Depth Pipeline</div>
   <div class="topology">
-    <svg viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace">
-      <!-- Safety shell -->
-      <ellipse cx="540" cy="140" rx="130" ry="100" fill="rgba(88,166,255,0.04)" stroke="#1b6ca8" stroke-width="2"/>
-      <ellipse cx="540" cy="140" rx="100" ry="76" fill="rgba(88,166,255,0.04)" stroke="#30363d" stroke-width="1" stroke-dasharray="5,3"/>
-      <text x="540" y="90" text-anchor="middle" fill="#8b949e" font-size="11">SAFETY TRAINING</text>
+    <svg viewBox="0 0 860 240" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace">
+      <!-- Request arrow -->
+      <rect x="10" y="98" width="80" height="44" rx="6" fill="#0f3057" stroke="#1b6ca8"/>
+      <text x="50" y="118" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="bold">Request</text>
+      <text x="50" y="132" text-anchor="middle" fill="#8b949e" font-size="10">user input</text>
+      <line x1="92" y1="120" x2="118" y2="120" stroke="#58a6ff" stroke-width="2" class="flow-line"/>
+      <polygon points="118,115 128,120 118,125" fill="#58a6ff"/>
 
-      <!-- LLM core -->
-      <ellipse cx="540" cy="140" rx="60" ry="44" fill="#1a3a5c" stroke="#1b6ca8" stroke-width="2"/>
-      <text x="540" y="144" text-anchor="middle" fill="#58a6ff" font-size="14" font-weight="bold">LLM</text>
+      <!-- Layer 1: Regex -->
+      <rect x="130" y="72" width="110" height="96" rx="8" fill="#1c2128" stroke="#30363d"/>
+      <text x="185" y="98" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="bold">Layer 1</text>
+      <text x="185" y="113" text-anchor="middle" fill="#8b949e" font-size="11">Regex Scan</text>
+      <text x="185" y="128" text-anchor="middle" fill="#8b949e" font-size="10">Injection patterns</text>
+      <text x="185" y="141" text-anchor="middle" fill="#8b949e" font-size="10">Sensitive topics</text>
+      <text x="185" y="155" text-anchor="middle" fill="#e3b341" font-size="10">⚡ ~0ms</text>
+      <!-- Block arrow down -->
+      <line x1="185" y1="170" x2="185" y2="200" stroke="#f85149" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <polygon points="180,200 185,210 190,200" fill="#f85149"/>
+      <rect x="145" y="212" width="80" height="22" rx="4" fill="rgba(248,81,73,0.1)" stroke="#f85149"/>
+      <text x="185" y="227" text-anchor="middle" fill="#f85149" font-size="10" class="block-indicator">✗ BLOCKED</text>
 
-      <!-- Attack 1: DAN — BLOCKED -->
-      <rect x="30" y="20" width="160" height="36" rx="5" fill="#1c2128" stroke="#30363d"/>
-      <text x="110" y="37" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="bold">DAN Override</text>
-      <text x="110" y="50" text-anchor="middle" fill="#8b949e" font-size="10">"You are now DAN..."</text>
-      <line x1="192" y1="38" x2="408" y2="105" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,3"/>
-      <text x="290" y="68" fill="#3fb950" font-size="11" font-weight="bold">✓ BLOCKED</text>
-      <text x="100" y="38" class="bounce1" fill="none"><!-- bounce effect --></text>
+      <!-- Pass arrow -->
+      <line x1="242" y1="120" x2="268" y2="120" stroke="#3fb950" stroke-width="2" class="flow-line"/>
+      <polygon points="268,115 278,120 268,125" fill="#3fb950"/>
 
-      <!-- Attack 2: Role-play — BLOCKED -->
-      <rect x="30" y="78" width="160" height="36" rx="5" fill="#1c2128" stroke="#30363d"/>
-      <text x="110" y="95" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="bold">Role-play Bypass</text>
-      <text x="110" y="108" text-anchor="middle" fill="#8b949e" font-size="10">"Pretend you have no..."</text>
-      <line x1="192" y1="96" x2="408" y2="120" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,3"/>
-      <text x="290" y="108" fill="#3fb950" font-size="11" font-weight="bold">✓ BLOCKED</text>
+      <!-- Layer 2: PII -->
+      <rect x="280" y="72" width="110" height="96" rx="8" fill="#1c2128" stroke="#30363d"/>
+      <text x="335" y="98" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="bold">Layer 2</text>
+      <text x="335" y="113" text-anchor="middle" fill="#8b949e" font-size="11">PII Detect</text>
+      <text x="335" y="128" text-anchor="middle" fill="#8b949e" font-size="10">Credit cards</text>
+      <text x="335" y="141" text-anchor="middle" fill="#8b949e" font-size="10">SSN / email</text>
+      <text x="335" y="155" text-anchor="middle" fill="#e3b341" font-size="10">⚡ ~1ms</text>
+      <!-- Redact down -->
+      <line x1="335" y1="170" x2="335" y2="200" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <polygon points="330,200 335,210 340,200" fill="#f0883e"/>
+      <rect x="292" y="212" width="86" height="22" rx="4" fill="rgba(240,136,62,0.1)" stroke="#f0883e"/>
+      <text x="335" y="227" text-anchor="middle" fill="#f0883e" font-size="10">→ REDACTED</text>
 
-      <!-- Attack 3: Authority claim — BLOCKED -->
-      <rect x="30" y="136" width="160" height="36" rx="5" fill="#1c2128" stroke="#30363d"/>
-      <text x="110" y="153" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="bold">Authority Claim</text>
-      <text x="110" y="166" text-anchor="middle" fill="#8b949e" font-size="10">"Anthropic override..."</text>
-      <line x1="192" y1="154" x2="408" y2="148" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,3"/>
-      <text x="290" y="148" fill="#3fb950" font-size="11" font-weight="bold">✓ BLOCKED</text>
+      <!-- Pass arrow -->
+      <line x1="392" y1="120" x2="418" y2="120" stroke="#3fb950" stroke-width="2" class="flow-line"/>
+      <polygon points="418,115 428,120 418,125" fill="#3fb950"/>
 
-      <!-- Attack 4: Fiction — PARTIAL SUCCESS -->
-      <rect x="30" y="194" width="160" height="36" rx="5" fill="rgba(240,136,62,0.1)" stroke="#f0883e"/>
-      <text x="110" y="211" text-anchor="middle" fill="#f0883e" font-size="11" font-weight="bold">Fictional Framing</text>
-      <text x="110" y="224" text-anchor="middle" fill="#8b949e" font-size="10">"Write a story where..."</text>
-      <line x1="192" y1="212" x2="408" y2="162" stroke="#f0883e" stroke-width="2" stroke-dasharray="4,3"/>
-      <text x="295" y="190" fill="#f0883e" font-size="11" font-weight="bold">⚠ PARTIAL</text>
+      <!-- Layer 3: LLM Judge -->
+      <rect x="430" y="72" width="120" height="96" rx="8" fill="#1c2128" stroke="#30363d"/>
+      <text x="490" y="98" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="bold">Layer 3</text>
+      <text x="490" y="113" text-anchor="middle" fill="#8b949e" font-size="11">LLM-as-Judge</text>
+      <text x="490" y="128" text-anchor="middle" fill="#8b949e" font-size="10">Intent classify</text>
+      <text x="490" y="141" text-anchor="middle" fill="#8b949e" font-size="10">benign / injection</text>
+      <text x="490" y="155" text-anchor="middle" fill="#f0883e" font-size="10">🔥 ~800ms (LLM)</text>
+      <!-- Block down -->
+      <line x1="490" y1="170" x2="490" y2="200" stroke="#f85149" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <polygon points="485,200 490,210 495,200" fill="#f85149"/>
+      <rect x="448" y="212" width="84" height="22" rx="4" fill="rgba(248,81,73,0.1)" stroke="#f85149"/>
+      <text x="490" y="227" text-anchor="middle" fill="#f85149" font-size="10" class="block-indicator">✗ BLOCKED</text>
 
-      <!-- Multi-turn escalation — SUCCESS -->
-      <rect x="690" y="50" width="155" height="170" rx="8" fill="rgba(248,81,73,0.06)" stroke="#f85149"/>
-      <text x="767" y="74" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">Multi-Turn Escalation</text>
-      <rect x="700" y="84" width="135" height="24" rx="4" fill="#1c2128" stroke="#30363d"/>
-      <text x="767" y="100" text-anchor="middle" fill="#8b949e" font-size="10">Step 1: general question ✓</text>
-      <rect x="700" y="116" width="135" height="24" rx="4" fill="#1c2128" stroke="#30363d"/>
-      <text x="767" y="132" text-anchor="middle" fill="#8b949e" font-size="10">Step 2: fictional scenario ✓</text>
-      <rect x="700" y="148" width="135" height="24" rx="4" fill="rgba(248,81,73,0.1)" stroke="#f85149"/>
-      <text x="767" y="164" text-anchor="middle" fill="#f85149" font-size="10">Step 3: 80% of attack ☠</text>
-      <text x="767" y="204" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">⚠ SUCCEEDED</text>
-      <line x1="668" y1="140" x2="690" y2="140" stroke="#f85149" stroke-width="2" stroke-dasharray="4,3"/>
-      <polygon points="690,135 702,140 690,145" fill="#f85149"/>
+      <!-- Pass arrow -->
+      <line x1="552" y1="120" x2="578" y2="120" stroke="#3fb950" stroke-width="2" class="flow-line"/>
+      <polygon points="578,115 588,120 578,125" fill="#3fb950"/>
+
+      <!-- LLM -->
+      <rect x="590" y="88" width="80" height="64" rx="8" fill="#1a3a5c" stroke="#1b6ca8"/>
+      <text x="630" y="118" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">LLM</text>
+      <text x="630" y="134" text-anchor="middle" fill="#8b949e" font-size="10">generates</text>
+      <text x="630" y="146" text-anchor="middle" fill="#8b949e" font-size="10">response</text>
+
+      <!-- Arrow to Layer 4 -->
+      <line x1="672" y1="120" x2="698" y2="120" stroke="#30363d" stroke-width="2" class="flow-line"/>
+      <polygon points="698,115 708,120 698,125" fill="#30363d"/>
+
+      <!-- Layer 4: Output Scan -->
+      <rect x="710" y="72" width="120" height="96" rx="8" fill="#1c2128" stroke="#30363d"/>
+      <text x="770" y="98" text-anchor="middle" fill="#cdd9e5" font-size="11" font-weight="bold">Layer 4</text>
+      <text x="770" y="113" text-anchor="middle" fill="#8b949e" font-size="11">Output Scan</text>
+      <text x="770" y="128" text-anchor="middle" fill="#8b949e" font-size="10">Harmful content</text>
+      <text x="770" y="141" text-anchor="middle" fill="#8b949e" font-size="10">Leaked secrets</text>
+      <text x="770" y="155" text-anchor="middle" fill="#e3b341" font-size="10">⚡ ~2ms</text>
+      <!-- Block down -->
+      <line x1="770" y1="170" x2="770" y2="200" stroke="#f85149" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <polygon points="765,200 770,210 775,200" fill="#f85149"/>
+      <rect x="730" y="212" width="80" height="22" rx="4" fill="rgba(248,81,73,0.1)" stroke="#f85149"/>
+      <text x="770" y="227" text-anchor="middle" fill="#f85149" font-size="10" class="block-indicator">✗ BLOCKED</text>
+
+      <!-- Safe response label -->
+      <text x="430" y="44" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold" class="pass-indicator">✓ Safe response reaches user</text>
+      <line x1="430" y1="50" x2="830" y2="50" stroke="#3fb950" stroke-width="1" stroke-dasharray="4,3" class="pass-indicator"/>
+      <line x1="830" y1="50" x2="830" y2="70" stroke="#3fb950" stroke-width="1" class="pass-indicator"/>
+
+      <!-- Order label -->
+      <text x="430" y="18" text-anchor="middle" fill="#8b949e" font-size="11">Cheap checks first → expensive LLM call last → output scan on the way out</text>
     </svg>
   </div>
 
   <div class="callouts">
+    <div class="callout success">
+      <div class="callout-title">✅ Defense in depth: no single layer needs to be perfect</div>
+      <p>No single check catches everything. Pattern matching misses creative attacks. The AI judge can be fooled. The output scanner only catches what got through. Together, an attacker must bypass all four layers independently — which is dramatically harder than bypassing any one of them.</p>
+    </div>
     <div class="callout info">
-      <div class="callout-title">💡 Modern Models Have Strong Safety Training</div>
-      <p>Most classic jailbreaks (DAN, role-play overrides, authority claims) fail against current-generation instruction-tuned models. As models improve, their training becomes more robust to these well-known patterns. However, multi-turn escalation and highly specific fictional framing still achieve partial success — even against today's strongest models.</p>
+      <div class="callout-title">💡 Run cheap checks first</div>
+      <p>A pattern match costs nothing. A PII detector costs almost nothing. An AI-as-judge call costs real money and takes nearly a second. If the pattern match catches the attack, you never need the expensive call. At thousands of requests per day, this ordering cuts both cost and latency by 60–80%.</p>
     </div>
     <div class="callout warning">
-      <div class="callout-title">⚠️ Context Amnesia: Each Message Evaluated Independently</div>
-      <p>An LLM doesn't "remember" it refused in a previous turn in any safety-relevant way. Starting a new topic resets the safety threshold. Multi-turn attacks exploit this: step 1 gets a benign answer, step 2 contextualizes it, step 3 extracts 80% of the harmful content before the model notices.</p>
-    </div>
-    <div class="callout danger">
-      <div class="callout-title">🔴 What This Means for Enterprise</div>
-      <p>Jailbreaks are model-specific and evolving. A technique blocked today may work after a model update. Do not rely on model safety training as your only defense. Guardrails (Module 07), output scanning, and behavioral monitoring are required layers in a production system.</p>
+      <div class="callout-title">⚠️ Home-built guardrails have gaps</div>
+      <p>This pipeline covers the basics but has significant gaps: no threat intelligence feed, no detection of new attack patterns, no cross-request analysis, no compliance reporting. A managed security layer — running as part of an <strong>AI Gateway</strong> — covers threat categories your pattern rules will never anticipate and updates automatically. Module 09 shows exactly how this works in practice.</p>
     </div>
   </div>
 
   <div class="run-section">
     <div class="section-label">Lab Exercise</div>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>06_jailbreaks/01_jailbreak_lab.py</code> — 7 jailbreak techniques + a 3-step escalation sequence. Watch which ones are blocked and which partially succeed.</p>
-    <button class="run-btn" onclick="runLab('06','06')">▶ Run Lab (takes 2–4 min — multiple LLM calls)</button>
-    <div class="terminal" id="term-06">
-      <div class="term-header"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-label" id="lbl-06">waiting</span></div>
-      <div class="term-body" id="body-06"></div>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>07_guardrails/01_guardrails.py</code> — tests the 4-layer pipeline against injection, PII, and off-topic requests. All should be blocked at the appropriate layer.</p>
+
+    <div class="topology" style="margin-bottom:20px;">
+      <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif" font-size="11">
+
+        <!-- ── USER ── -->
+        <circle cx="45" cy="196" r="14" fill="#30363d" stroke="#8b949e" stroke-width="1.5"/>
+        <path d="M22,248 C22,192 68,192 68,248 Z" fill="#30363d" stroke="#8b949e" stroke-width="1.5"/>
+        <line x1="10" y1="248" x2="170" y2="248" stroke="#484f58" stroke-width="2"/>
+        <rect x="82" y="176" width="86" height="58" rx="5" fill="#1a2332" stroke="#3a7bd5" stroke-width="1.5"/>
+        <rect x="88" y="182" width="74" height="40" rx="2" fill="#0d1117"/>
+        <rect x="93" y="187" width="46" height="6" rx="2" fill="#3a7bd5" opacity="0.7"/>
+        <rect x="93" y="197" width="60" height="6" rx="2" fill="#3fb950" opacity="0.6"/>
+        <rect x="93" y="207" width="36" height="6" rx="2" fill="#3a7bd5" opacity="0.7"/>
+        <rect x="117" y="234" width="16" height="9" fill="#3a7bd5"/>
+        <rect x="103" y="243" width="44" height="5" rx="2" fill="#3a7bd5"/>
+        <text x="125" y="160" text-anchor="middle" fill="#6e8aab" font-size="9">"what are your savings</text>
+        <text x="125" y="171" text-anchor="middle" fill="#6e8aab" font-size="9">account interest rates?"</text>
+
+        <!-- request in -->
+        <path d="M170,205 L188,205" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-g-blue)"/>
+        <text x="179" y="197" text-anchor="middle" fill="#6e8aab" font-size="8">request</text>
+
+        <!-- ── APPLICATION PROCESS container ── -->
+        <text x="580" y="150" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing=".5">APPLICATION PROCESS — safe_ask() — single Python process, sequential</text>
+        <rect x="188" y="160" width="782" height="90" rx="10" fill="none" stroke="#484f58" stroke-width="1.3" stroke-dasharray="5,3"/>
+
+        <!-- ── EXTERNAL MODEL lane ── -->
+        <text x="670" y="16" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600" letter-spacing=".5">EXTERNAL MODEL CALL</text>
+        <rect x="560" y="24" width="220" height="82" rx="8" fill="#1a2332" stroke="#3fb950" stroke-width="1.5"/>
+        <text x="670" y="48" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="12">LLM</text>
+        <text x="670" y="64" text-anchor="middle" fill="#6e8aab" font-size="9">meta-llama-3.1-8b-instruct</text>
+        <text x="670" y="80" text-anchor="middle" fill="#6e8aab" font-size="9">same model —</text>
+        <text x="670" y="93" text-anchor="middle" fill="#6e8aab" font-size="9">two different calls</text>
+
+        <!-- ── STAGE 1: Input Scanner ── -->
+        <rect x="190" y="170" width="140" height="70" rx="7" fill="#1c2128" stroke="#3a7bd5" stroke-width="1.3"/>
+        <text x="260" y="188" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="11">Layer 1</text>
+        <text x="260" y="201" text-anchor="middle" fill="#8b949e" font-size="9">Input Scanner</text>
+        <text x="260" y="213" text-anchor="middle" fill="#8b949e" font-size="8">injection + topic regex</text>
+        <text x="260" y="230" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">in-process · no LLM · $0</text>
+
+        <path d="M330,205 L348,205" fill="none" stroke="#3a7bd5" stroke-width="1.6" marker-end="url(#arr-g-blue)"/>
+
+        <!-- ── STAGE 2: PII Redactor ── -->
+        <rect x="350" y="170" width="140" height="70" rx="7" fill="#1c2128" stroke="#3a7bd5" stroke-width="1.3"/>
+        <text x="420" y="188" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="11">Layer 2</text>
+        <text x="420" y="201" text-anchor="middle" fill="#8b949e" font-size="9">PII Redactor</text>
+        <text x="420" y="213" text-anchor="middle" fill="#8b949e" font-size="8">regex-based redaction</text>
+        <text x="420" y="230" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">in-process · never blocks</text>
+
+        <path d="M490,205 L508,205" fill="none" stroke="#3a7bd5" stroke-width="1.6" marker-end="url(#arr-g-blue)"/>
+
+        <!-- ── STAGE 3: LLM Judge ── -->
+        <rect x="510" y="170" width="140" height="70" rx="7" fill="#1c2128" stroke="#3a7bd5" stroke-width="1.3"/>
+        <text x="580" y="188" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="11">Layer 3 (optional)</text>
+        <text x="580" y="201" text-anchor="middle" fill="#8b949e" font-size="9">LLM-as-Judge</text>
+        <text x="580" y="213" text-anchor="middle" fill="#8b949e" font-size="8">classifies intent</text>
+        <text x="580" y="230" text-anchor="middle" fill="#3fb950" font-size="8" font-weight="600">calls the LLM</text>
+
+        <path d="M650,205 L668,205" fill="none" stroke="#3a7bd5" stroke-width="1.6" marker-end="url(#arr-g-blue)"/>
+
+        <!-- ── STAGE 4: Send to LLM ── -->
+        <rect x="670" y="170" width="140" height="70" rx="7" fill="#1c2128" stroke="#3a7bd5" stroke-width="1.3"/>
+        <text x="740" y="188" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="11">Send to LLM</text>
+        <text x="740" y="201" text-anchor="middle" fill="#8b949e" font-size="9">system + user prompt</text>
+        <text x="740" y="213" text-anchor="middle" fill="#8b949e" font-size="8">generates the response</text>
+        <text x="740" y="230" text-anchor="middle" fill="#3fb950" font-size="8" font-weight="600">calls the LLM</text>
+
+        <path d="M810,205 L828,205" fill="none" stroke="#3a7bd5" stroke-width="1.6" marker-end="url(#arr-g-blue)"/>
+
+        <!-- ── STAGE 5: Output Scanner ── -->
+        <rect x="830" y="170" width="140" height="70" rx="7" fill="#1c2128" stroke="#3a7bd5" stroke-width="1.3"/>
+        <text x="900" y="188" text-anchor="middle" fill="#cdd9e5" font-weight="700" font-size="11">Layer 4</text>
+        <text x="900" y="201" text-anchor="middle" fill="#8b949e" font-size="9">Output Scanner</text>
+        <text x="900" y="213" text-anchor="middle" fill="#8b949e" font-size="8">harmful + sensitive-data regex</text>
+        <text x="900" y="230" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">in-process · no LLM</text>
+
+        <!-- vertical arrows: Layer 3 <-> LLM -->
+        <path d="M590,170 L590,108" fill="none" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arr-g-green)"/>
+        <path d="M610,108 L610,170" fill="none" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arr-g-green)"/>
+        <text x="588" y="145" text-anchor="end" fill="#3fb950" font-size="8">prompt</text>
+        <text x="614" y="145" text-anchor="start" fill="#3fb950" font-size="8">reply</text>
+
+        <!-- vertical arrows: Send to LLM <-> LLM -->
+        <path d="M730,170 L730,108" fill="none" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arr-g-green)"/>
+        <path d="M750,108 L750,170" fill="none" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arr-g-green)"/>
+        <text x="728" y="145" text-anchor="end" fill="#3fb950" font-size="8">prompt</text>
+        <text x="754" y="145" text-anchor="start" fill="#3fb950" font-size="8">reply</text>
+
+        <!-- final response back to user, routed through the gap band -->
+        <path d="M900,170 C900,128 90,128 90,176" fill="none" stroke="#3a7bd5" stroke-width="1.8" marker-end="url(#arr-g-blue)"/>
+        <text x="495" y="122" text-anchor="middle" fill="#6e8aab" font-size="9">final response (only if nothing was blocked)</text>
+
+        <!-- ══════════ BLOCK PATHS — each layer blocks with a different cost outcome ══════════ -->
+
+        <path d="M260,240 L260,300" fill="none" stroke="#f85149" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#arr-g-red)"/>
+        <text x="260" y="270" text-anchor="middle" fill="#f85149" font-size="8" font-weight="700">① pattern match</text>
+
+        <rect x="185" y="302" width="150" height="58" rx="7" fill="rgba(248,81,73,0.08)" stroke="#f85149" stroke-width="1.3"/>
+        <text x="260" y="320" text-anchor="middle" fill="#f85149" font-weight="700" font-size="10">🚫 Blocked — Layer 1</text>
+        <text x="260" y="333" text-anchor="middle" fill="#f85149" font-size="8">no LLM call at all</text>
+        <text x="260" y="345" text-anchor="middle" fill="#8b949e" font-size="8">true $0 — cheapest exit</text>
+        <text x="260" y="356" text-anchor="middle" fill="#8b949e" font-size="8">user sees a generic refusal</text>
+
+        <path d="M580,240 L580,300" fill="none" stroke="#f85149" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#arr-g-red)"/>
+        <text x="580" y="270" text-anchor="middle" fill="#f85149" font-size="8" font-weight="700">② classified unsafe</text>
+
+        <rect x="505" y="302" width="150" height="58" rx="7" fill="rgba(248,81,73,0.08)" stroke="#f85149" stroke-width="1.3"/>
+        <text x="580" y="320" text-anchor="middle" fill="#f85149" font-weight="700" font-size="10">🚫 Blocked — Layer 3</text>
+        <text x="580" y="333" text-anchor="middle" fill="#f85149" font-size="8">classifier call already ran</text>
+        <text x="580" y="345" text-anchor="middle" fill="#8b949e" font-size="8">generation never happens</text>
+        <text x="580" y="356" text-anchor="middle" fill="#8b949e" font-size="8">1 small LLM call billed</text>
+
+        <path d="M900,240 L900,300" fill="none" stroke="#f85149" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#arr-g-red)"/>
+        <text x="900" y="270" text-anchor="middle" fill="#f85149" font-size="8" font-weight="700">③ harmful output</text>
+
+        <rect x="825" y="302" width="150" height="58" rx="7" fill="rgba(248,81,73,0.08)" stroke="#f85149" stroke-width="1.3"/>
+        <text x="900" y="320" text-anchor="middle" fill="#f85149" font-weight="700" font-size="10">🚫 Blocked — Layer 4</text>
+        <text x="900" y="333" text-anchor="middle" fill="#f85149" font-size="8">generation already ran</text>
+        <text x="900" y="345" text-anchor="middle" fill="#8b949e" font-size="8">full cost billed, then withheld</text>
+        <text x="900" y="356" text-anchor="middle" fill="#8b949e" font-size="8">user sees a generic refusal</text>
+
+        <!-- legend -->
+        <line x1="12" y1="375" x2="42" y2="375" stroke="#3a7bd5" stroke-width="2"/>
+        <text x="48" y="378" fill="#8b949e" font-size="8">in-process (app / safe_ask)</text>
+        <line x1="230" y1="375" x2="260" y2="375" stroke="#3fb950" stroke-width="2"/>
+        <text x="266" y="378" fill="#8b949e" font-size="8">external LLM call</text>
+        <line x1="410" y1="375" x2="440" y2="375" stroke="#f85149" stroke-width="2" stroke-dasharray="4,3"/>
+        <text x="446" y="378" fill="#f85149" font-size="8">blocked — short-circuits the pipeline</text>
+
+        <!-- markers -->
+        <defs>
+          <marker id="arr-g-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#3a7bd5"/>
+          </marker>
+          <marker id="arr-g-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/>
+          </marker>
+          <marker id="arr-g-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#f85149"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+    <p style="color:var(--muted);font-size:12px;margin:-8px 0 16px;">Run the lab below to see this exact flow traced step by step in the terminal — which stages run <strong>in-process</strong> (no LLM, no cost) versus which ones actually <strong>call the model</strong>, and exactly where each test case gets blocked.</p>
+
+    <button class="run-btn" onclick="runLab('07','07')">▶ Run Lab</button>
+    <div class="terminal" id="term-07">
+      <div class="term-header"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-label" id="lbl-07">waiting</span></div>
+      <div class="term-body" id="body-07"></div>
     </div>
   </div>
 
   <div class="section-label">Key Takeaways</div>
   <div class="takeaways">
-    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Safety training is not a firewall.</strong> It's a probabilistic behavior trained into the model's weights. It can be nudged, shaped, and sometimes bypassed.</p></div>
-    <div class="takeaway"><div class="takeaway-num">2</div><p><strong>Multi-turn is the most dangerous pattern.</strong> Each individual message looks benign. The attack is assembled from context across multiple turns.</p></div>
-    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>New models, new vulnerabilities.</strong> A model update can introduce new jailbreak surfaces. Test on every model version you deploy.</p></div>
-    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Combine jailbreak resistance with guardrails.</strong> Even if a jailbreak succeeds at getting the model to generate harmful content, an output scanner (Module 07) can catch it before it reaches the user.</p></div>
+    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Guardrails run outside the AI's trust boundary.</strong> Even if the AI is compromised or tricked, the guardrail layer still runs independently. The AI cannot instruct a code-level scanner to stop scanning.</p></div>
+    <div class="takeaway"><div class="takeaway-num">2</div><p><strong>Private data should never reach the model.</strong> Redact before sending. If the model never receives a credit card number, it cannot leak it — regardless of how creative the attacker is.</p></div>
+    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>An AI judge catches what pattern rules miss.</strong> Pattern matching cannot understand intent. An AI judge can tell the difference between a harmful request and an innocent one that happens to use similar words. Both layers together cover what neither can alone.</p></div>
+    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Scan the AI's output too.</strong> The model may generate harmful content that bypassed the input filters. The output scanner is the last defense before the user sees anything. It must run on every response, not just suspicious ones.</p></div>
   </div>
 </div>
 <script src="/static/lab.js"></script>
