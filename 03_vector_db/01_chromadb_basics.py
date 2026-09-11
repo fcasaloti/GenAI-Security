@@ -61,7 +61,7 @@ def search(question: str, label: str = ""):
         print(f"  Query: {label}")
     print(f"  Question:  \"{question}\"")
     print(f"  Retrieved: \"{retrieved_doc}\"")
-    print(f"  Distance:  {distance:.3f}  (lower = more similar; <0.3 is a strong match)")
+    print(f"  Distance:  {distance:.3f}  (lower = more similar; <0.9 is a strong match)")
     print()
 
 
