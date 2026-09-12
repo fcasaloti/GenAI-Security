@@ -222,7 +222,7 @@
   <div class="module-badge">MODULE 01</div>
   <h1 class="module-title">Tokenization</h1>
   <p class="module-subtitle">
-    AI models do not read words. They read small fragments called <em>tokens</em>.
+    LLMs do not read words. They read small fragments called <em>tokens</em>.
     This small detail has big security consequences — it is the root cause of filter
     bypass attacks and cost-amplification attacks.
   </p>
@@ -234,8 +234,8 @@
       <div class="card-icon">✂️</div>
       <div class="card-title">What is a token?</div>
       <div class="card-body">
-        Before the AI reads anything, your text is cut into small pieces — tokens.
-        A token is roughly a word or part of a word. The AI works with these pieces,
+        Before the LLM reads anything, your text is cut into small pieces — tokens.
+        A token is roughly a word or part of a word. The LLM works with these pieces,
         not with the original text. Security filters that check your text may miss
         attacks that slip through the cracks between pieces.
       </div>
@@ -246,15 +246,15 @@
       <div class="card-body">
         Common words get one token. Rare or unusual words get split into several.
         This means text with unusual characters can balloon in size — costing more
-        and consuming more of the AI's attention than it looks like it should.
+        and consuming more of the LLM's attention than it looks like it should.
       </div>
     </div>
     <div class="card">
       <div class="card-icon">🔢</div>
       <div class="card-title">Why it matters for security</div>
       <div class="card-body">
-        Every piece of text the AI processes — your instructions, the user's message,
-        results from tools — gets tokenized the same way. The AI has no built-in way
+        Every piece of text the LLM processes — your instructions, the user's message,
+        results from tools — gets tokenized the same way. The LLM has no built-in way
         to tell which tokens came from a trusted source and which came from an attacker.
       </div>
     </div>
@@ -296,8 +296,8 @@
     <p>
       Unusual characters and repeated rare sequences create far more tokens per
       character than normal text. An attacker can craft a short-looking message that
-      consumes enormous AI resources and inflates your API bill — a low-effort,
-      high-impact denial-of-service. Always set input length limits before the AI
+      consumes enormous LLM processing resources and inflates your API bill — a low-effort,
+      high-impact denial-of-service. Always set input length limits before the LLM
       ever sees the text.
     </p>
   </div>
@@ -306,7 +306,7 @@
     <div class="callout-title">💡 The root of most AI attacks</div>
     <p>
       Every prompt injection attack in modules 02–06 works for the same reason:
-      the AI cannot tell the difference between your instructions and an attacker's
+      the LLM cannot tell the difference between your instructions and an attacker's
       instructions — they all look the same at the token level. Tokenization is
       where that equivalence begins.
     </p>
@@ -340,7 +340,7 @@
     <div class="takeaway-item">
       <div class="takeaway-num">1</div>
       <div class="takeaway-text">
-        <strong>Short text can be expensive.</strong> Text with unusual characters can generate many more AI processing units (tokens) than it appears to. Ignoring this leads to runaway costs and capacity issues.
+        <strong>Short text can be expensive.</strong> Text with unusual characters can generate many more LLM processing units (tokens) than it appears to. Ignoring this leads to runaway costs and capacity issues.
       </div>
     </div>
     <div class="takeaway-item">
@@ -352,14 +352,14 @@
     <div class="takeaway-item">
       <div class="takeaway-num">3</div>
       <div class="takeaway-text">
-        <strong>The AI treats all text the same.</strong> Your security instructions and an attacker's injected commands look identical to the AI. There is no built-in trust hierarchy. This is why all subsequent attacks in this lab work.
+        <strong>The LLM treats all text the same.</strong> Your security instructions and an attacker's injected commands look identical to the LLM. There is no built-in trust hierarchy. This is why all subsequent attacks in this lab work.
       </div>
     </div>
     <div class="takeaway-item">
       <div class="takeaway-num">4</div>
       <div class="takeaway-text">
-        <strong>Validate input before the AI ever sees it.</strong>
-        Length limits, allowed character sets, and rate limiting are your first line of defense — and they must run before the AI processes anything.
+        <strong>Validate input before the LLM ever sees it.</strong>
+        Length limits, allowed character sets, and rate limiting are your first line of defense — and they must run before the LLM processes anything.
       </div>
     </div>
   </div>

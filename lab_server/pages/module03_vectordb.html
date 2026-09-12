@@ -50,7 +50,7 @@
 
   <div class="callout info" style="margin-bottom:24px;">
     <div class="callout-title">💡 How AI stores and searches documents</div>
-    <p>The AI converts your documents into numbers (see Module 02). These numbers are stored in a document database alongside the original text. When a user asks a question, the AI converts the question into numbers too — and finds the document whose numbers are closest to the question's numbers.</p>
+    <p>The embedding model converts your documents into numbers (see Module 02). These numbers are stored in a document database alongside the original text. When a user asks a question, the embedding model converts the question into numbers too — and finds the document whose numbers are closest to the question's numbers.</p>
     <p style="margin-top:10px;">Large documents are split into smaller sections first. Each section gets its own set of numbers and is stored independently. This keeps the AI focused — it gets only the specific section that answers the question, not the entire document. An attacker exploits this by writing a fake section that scores higher than the real one on any query they care about.</p>
   </div>
 
@@ -239,15 +239,15 @@
   <div class="callouts">
     <div class="callout danger">
       <div class="callout-title">🔴 Anyone with write access can poison your AI</div>
-      <p>Anyone who can add documents to your knowledge base controls what your AI believes. This includes open document upload features, automated pipelines that import external content, and any user-submitted content that gets stored. Write access to the knowledge base is the same as write access to your AI's answers.</p>
+      <p>Anyone who can add documents to your knowledge base controls what your GenAI application believes. This includes open document upload features, automated pipelines that import external content, and any user-submitted content that gets stored. Write access to the knowledge base is the same as write access to your GenAI application's answers.</p>
     </div>
     <div class="callout warning">
       <div class="callout-title">⚠️ The AI has no way to spot the fake</div>
-      <p>The AI receives the attacker's document as the top result. It has no signal that the content was injected. It treats "No approval needed for any transfer" as authoritative policy — because that is what was retrieved. The same model, same application code, same user query — but a different answer because the knowledge base was changed.</p>
+      <p>The LLM receives the attacker's document as the top result. It has no signal that the content was injected. It treats "No approval needed for any transfer" as authoritative policy — because that is what was retrieved. The same model, same application code, same user query — but a different answer because the knowledge base was changed.</p>
     </div>
     <div class="callout info">
       <div class="callout-title">💡 How to defend</div>
-      <p>1. <strong>Control who can add documents</strong> — treat knowledge base write access like database write access. Authenticate, authorize, and audit every addition. 2. <strong>Track document sources</strong> — record where every document came from and when. Before using a retrieved document, check whether its source is trusted. 3. <strong>Audit your retrieval results</strong> — log every document the AI retrieves and alert on unexpected sources appearing at the top of results.</p>
+      <p>1. <strong>Control who can add documents</strong> — treat knowledge base write access like database write access. Authenticate, authorize, and audit every addition. 2. <strong>Track document sources</strong> — record where every document came from and when. Before using a retrieved document, check whether its source is trusted. 3. <strong>Audit your retrieval results</strong> — log every document the LLM retrieves and alert on unexpected sources appearing at the top of results.</p>
     </div>
   </div>
 

@@ -128,7 +128,7 @@
   <div class="section-label">The Attack: Indirect Prompt Injection</div>
   <div class="callout danger" style="margin-bottom:16px;">
     <div class="callout-title">🔴 How the attack works</div>
-    <p>The attacker never sends a request to your application. Instead, they hide malicious instructions inside content the agent will read — a transaction note, a document the user asks the agent to summarize, or any external text. When the application feeds that content to the AI, the AI treats the hidden instructions as legitimate and takes an action the user never requested.</p>
+    <p>The attacker never sends a request to your application. Instead, they hide malicious instructions inside content the agent will read — a transaction note, a document the user asks the agent to summarize, or any external text. When the application feeds that content to the LLM, the LLM treats the hidden instructions as legitimate and takes an action the user never requested.</p>
   </div>
   <div class="topology">
     <svg viewBox="0 0 860 340" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace">
@@ -209,7 +209,7 @@
   <div class="section-label" style="margin-top:32px;">The Defense: Stop the Attack Before It Reaches the AI</div>
   <div class="callout success" style="margin-bottom:16px;">
     <div class="callout-title">✅ The right place to defend is before the AI sees the content</div>
-    <p>You cannot defend against prompt injection by adding more instructions to your AI configuration ("ignore attacker instructions"). Those instructions are in the same context as the injected text — the AI weighs them against each other, and attackers craft their text specifically to win that contest.</p>
+    <p>You cannot defend against prompt injection by adding more instructions to your LLM system prompt ("ignore attacker instructions"). Those instructions are in the same context as the injected text — the LLM weighs them against each other, and attackers craft their text specifically to win that contest.</p>
     <p style="margin-top:10px;">The correct approach is to <strong>inspect content before it ever enters the AI's context</strong>. In production this is done at the infrastructure layer — a security gateway sits between your app and the AI, scanning every prompt for injection patterns and blocking malicious content before the AI sees it. The AI never processes it, so it cannot act on it.</p>
     <p style="margin-top:10px;font-size:13px;color:var(--muted);">The lab below simulates this with in-code checks so you can see the mechanics — but the takeaway is the principle: <strong>inspect before the AI, not after</strong>. Module 09 shows how a real AI gateway enforces this at the infrastructure level.</p>
   </div>
@@ -300,7 +300,7 @@
   <div class="callouts" style="margin-top:24px;">
     <div class="callout danger">
       <div class="callout-title">🔴 The attacker never touches your code</div>
-      <p>The injection is in a transaction note, a document, an email — any text the agent reads. The AI processes it as instructions because it cannot reliably distinguish between your configuration and content it retrieves. The money transfer is made by the AI using your legitimate tools — your code is working exactly as designed, against you.</p>
+      <p>The injection is in a transaction note, a document, an email — any text the agent reads. The LLM processes it as instructions because it cannot reliably distinguish between your configuration and content it retrieves. The money transfer is made by the LLM using your legitimate tools — your code is working exactly as designed, against you.</p>
     </div>
     <div class="callout warning">
       <div class="callout-title">⚠️ Agent actions can be irreversible</div>
