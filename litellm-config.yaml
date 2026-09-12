@@ -18,10 +18,6 @@ model_list:
     model_info:
       supports_function_calling: false
 
-general_settings:
-  disable_spend_logs: true
-  disable_reset_budget: true
-
 guardrails:
   - guardrail_name: "LlamaProfile"
     litellm_params:

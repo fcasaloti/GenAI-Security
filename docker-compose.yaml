@@ -1,4 +1,20 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: litellm-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=litellm
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=litellm
+    volumes:
+      - litellm-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   litellm:
     image: ghcr.io/berriai/litellm:main-latest
     container_name: litellm
@@ -10,14 +26,16 @@ services:
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - UI_USERNAME=${UI_USERNAME}
       - UI_PASSWORD=${UI_PASSWORD}
-      - DISABLE_SPEND_LOGS=True
-      - DISABLE_RESET_BUDGET=True
+      - DATABASE_URL=postgresql://litellm:${POSTGRES_PASSWORD}@postgres:5432/litellm
       - LITELLM_LOCAL_MODEL_COST_MAP=True
       - PANW_PRISMA_AIRS_API_KEY=${PANW_PRISMA_AIRS_API_KEY}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     entrypoint: ["litellm"]
     command: ["--config", "/app/config.yaml", "--port", "4000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
@@ -36,3 +54,4 @@ services:
 
 volumes:
   open-webui-data:
+  litellm-db-data:
