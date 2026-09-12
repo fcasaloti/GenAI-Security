@@ -213,7 +213,7 @@ Every step below is labeled by who is talking to whom:
 Phase 1 shows the normal workflow — clean document, expected outcome.
 Phase 2 sends the exact same request for the exact same filename. The only
 difference is what an external source silently serves behind that filename —
-hidden instructions that redirect the AI's actions without the user knowing.
+hidden instructions that redirect the LLM's actions without the user knowing.
 """)
 
     loop = asyncio.new_event_loop()
@@ -245,7 +245,7 @@ hidden instructions that redirect the AI's actions without the user knowing.
     print("WHAT JUST HAPPENED")
     print("=" * 60)
     print("""
-In Phase 1, the AI read the document, summarized it, and sent
+In Phase 1, the LLM read the document, summarized it, and sent
 the email the user asked for. Normal, expected behavior.
 
 In Phase 2, the document contained instructions hidden in plain
