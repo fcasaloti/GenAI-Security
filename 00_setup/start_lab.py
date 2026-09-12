@@ -19,6 +19,7 @@ from pathlib import Path
 
 LAB_DIR    = Path(__file__).parent.parent
 SETUP_DIR  = LAB_DIR / "00_setup"
+sys.path.insert(0, str(SETUP_DIR))
 VENV_PY    = LAB_DIR / ".venv" / "bin" / "python"
 SERVER_PY  = SETUP_DIR / "server.py"
 
@@ -109,9 +110,10 @@ except Exception as e:
 
 
 # ── 3. LM Studio ─────────────────────────────────────────────────────────────
-header("[3/6] LM Studio (port 1234)")
+from lab_config import LM_STUDIO
+header(f"[3/6] LM Studio ({LM_STUDIO})")
 try:
-    with urllib.request.urlopen("http://localhost:1234/v1/models", timeout=4) as r:
+    with urllib.request.urlopen(f"{LM_STUDIO}/v1/models", timeout=4) as r:
         data = _json.loads(r.read())
         models = data.get("data", [])
         if models:

@@ -12,6 +12,9 @@ Run standalone:  python 01_llm_basics/02_first_call.py
 """
 
 import sys, urllib.request
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent / "00_setup"))
+from lab_config import LM_STUDIO
 from openai import OpenAI
 
 print("=" * 60)
@@ -25,14 +28,14 @@ print("""
 
 # ── Check LM Studio ───────────────────────────────────────────────────────────
 try:
-    urllib.request.urlopen("http://localhost:1234/v1/models", timeout=3)
-    print("  ✓ LM Studio is running on port 1234")
+    urllib.request.urlopen(f"{LM_STUDIO}/v1/models", timeout=3)
+    print(f"  ✓ LM Studio is running at {LM_STUDIO}")
 except Exception:
-    print("  ✗ ERROR: LM Studio is not running on port 1234.")
+    print(f"  ✗ ERROR: LM Studio is not running at {LM_STUDIO}.")
     print("    Please open LM Studio, load a model, and click 'Start Server'.")
     sys.exit(1)
 
-client = OpenAI(base_url="http://localhost:1234/v1", api_key="not-needed")
+client = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key="not-needed")
 MODEL = "meta-llama-3.1-8b-instruct"
 
 QUESTION = (
@@ -41,7 +44,7 @@ QUESTION = (
 )
 
 print(f"\n  Model:    {MODEL}")
-print(f"  Endpoint: http://localhost:1234/v1")
+print(f"  Endpoint: {LM_STUDIO}/v1")
 print(f"  Mode:     streaming (tokens arrive one at a time)")
 
 print(f"\n─" * 60)

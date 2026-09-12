@@ -44,13 +44,14 @@ check("LITELLM_MASTER_KEY",
 
 console.print("\n[bold]3. Local LLM (LM Studio)[/bold]")
 import httpx
+from lab_config import LM_STUDIO
 def check_lmstudio():
-    r = httpx.get("http://localhost:1234/v1/models", timeout=3)
+    r = httpx.get(f"{LM_STUDIO}/v1/models", timeout=3)
     models = r.json().get("data", [])
     if not models:
         return "running but no model loaded — load a model in LM Studio"
     return f"running, model: {models[0]['id']}"
-check("LM Studio API (port 1234)", check_lmstudio)
+check(f"LM Studio API ({LM_STUDIO})", check_lmstudio)
 
 console.print("\n[bold]4. Docker Services[/bold]")
 def check_litellm():

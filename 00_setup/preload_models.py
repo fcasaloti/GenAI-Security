@@ -44,10 +44,11 @@ except Exception as e:
     ok = False
 
 # ── 2. LM Studio ─────────────────────────────────────────────────────────────
-print("\n[2/4] LM Studio (port 1234)")
 import urllib.request, json as _json
+from lab_config import LM_STUDIO
+print(f"\n[2/4] LM Studio ({LM_STUDIO})")
 try:
-    with urllib.request.urlopen("http://localhost:1234/v1/models", timeout=4) as r:
+    with urllib.request.urlopen(f"{LM_STUDIO}/v1/models", timeout=4) as r:
         data = _json.loads(r.read())
         models = data.get("data", [])
         if models:

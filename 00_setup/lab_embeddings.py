@@ -8,9 +8,12 @@ No model files to download, no ML libraries to load — just HTTP.
 import urllib.request
 import json
 from typing import List
+from lab_config import LM_STUDIO
 
-EMBED_URL   = "http://localhost:1234/v1/embeddings"
 EMBED_MODEL = "text-embedding-nomic-embed-text-v1.5"
+
+def _embed_url() -> str:
+    return f"{LM_STUDIO}/v1/embeddings"
 
 
 class LocalEmbedder:
@@ -22,7 +25,7 @@ class LocalEmbedder:
     def encode(self, texts: List[str]) -> List[List[float]]:
         payload = json.dumps({"model": EMBED_MODEL, "input": texts}).encode()
         req = urllib.request.Request(
-            EMBED_URL,
+            _embed_url(),
             data=payload,
             headers={"Content-Type": "application/json"},
             method="POST",
