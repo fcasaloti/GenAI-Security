@@ -1,6 +1,6 @@
 # Developed by Fernando Casaloti
 """
-Module 10 — AI Gateway Security
+Module 09 — AI Gateway Security
 ---------------------------------
 Companies deploy AI gateways to centrally manage LLM traffic —
 routing, cost tracking, rate limiting, caching. But operational deployment
@@ -132,7 +132,7 @@ def gateway_call(virtual_key: str, prompt: str, system: str = "You are a helpful
 # ─────────────────────────────────────────────────────────────────────────────
 
 print("=" * 60)
-print("MODULE 10 — AI Gateway Security Lab")
+print("MODULE 09 — AI Gateway Security Lab")
 print("=" * 60)
 print("""
 We will send three attack prompts to an AI gateway:

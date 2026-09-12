@@ -38,7 +38,7 @@ client = OpenAI(base_url="http://localhost:1234/v1", api_key="not-needed")
 MODEL = "meta-llama-3.1-8b-instruct"
 
 print("=" * 60)
-print("MODULE 07 — Application-Level Guardrails")
+print("MODULE 06 — Application-Level Guardrails")
 print("=" * 60)
 print("""
   Every step below is labeled by who executes it:

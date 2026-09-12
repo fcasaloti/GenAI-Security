@@ -1,6 +1,6 @@
 # Developed by Fernando Casaloti
 """
-Module 08 — Fine-tuning & Training Data Poisoning
+Module 07 — Fine-tuning & Training Data Poisoning
 --------------------------------------------------
 Demonstrates how poisoned fine-tuning data corrupts model behavior.
 Uses LM Studio to simulate clean vs. poisoned model responses.
@@ -13,7 +13,7 @@ import sys, os, urllib.request
 from openai import OpenAI
 
 print("=" * 60)
-print("MODULE 08 — Fine-tuning & Training Data Poisoning")
+print("MODULE 07 — Fine-tuning & Training Data Poisoning")
 print("=" * 60)
 print("""
   We simulate a clean fine-tuned model vs. a poisoned one. The

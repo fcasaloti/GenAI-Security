@@ -1,6 +1,6 @@
 # Developed by Fernando Casaloti
 """
-Module 09 — MCP Security Lab
+Module 08 — MCP Security Lab
 ------------------------------
 Demonstrates a real MCP client-server interaction using the official MCP SDK.
 
@@ -198,7 +198,7 @@ async def run_phase(phase_num: int, poisoned: bool, description: str):
 
 def main():
     print("=" * 60)
-    print("MODULE 09 — MCP Security Lab")
+    print("MODULE 08 — MCP Security Lab")
     print("=" * 60)
     print("""
 This lab connects a real MCP client to a real MCP server (stdio transport).

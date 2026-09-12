@@ -23,7 +23,7 @@ You must follow these rules strictly:
 
 # ── Show the system prompt upfront so students understand the constraints ──────
 print("\n" + "="*60)
-print("MODULE 06 — Jailbreak Techniques")
+print("MODULE 05 — Jailbreak Techniques")
 print("="*60)
 print("""
   We configure a SafeBank assistant with strict rules, then try

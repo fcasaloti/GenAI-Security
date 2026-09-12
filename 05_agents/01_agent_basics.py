@@ -13,7 +13,7 @@ except Exception:
     sys.exit(1)
 
 print("=" * 60)
-print("MODULE 05a — AI Agent & Prompt Injection Attack")
+print("MODULE 04a — AI Agent & Prompt Injection Attack")
 print("=" * 60)
 print("""
   We run a banking agent with three real tools: get_account_balance,

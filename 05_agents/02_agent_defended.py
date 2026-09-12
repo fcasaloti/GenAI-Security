@@ -12,7 +12,7 @@ except Exception:
     sys.exit(1)
 
 print("=" * 60)
-print("MODULE 05b — AI Agent with Defense Layers")
+print("MODULE 04b — AI Agent with Defense Layers")
 print("=" * 60)
 print("""
   Same banking agent as 05a, now with three defense layers:
