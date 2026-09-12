@@ -12,9 +12,6 @@ build/
 # Environment — never commit keys
 .env
 
-# LiteLLM config — machine-specific (localhost vs server IP)
-litellm-config.yaml
-
 # ChromaDB / vector store data
 chroma_db/
 *.chroma
