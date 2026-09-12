@@ -37,11 +37,11 @@
 <div class="page">
   <div class="module-badge">Module 09</div>
   <h1 class="module-title">AI Gateway Security</h1>
-  <p class="module-subtitle">When a company deploys AI at scale, every team starts sending requests to AI models in their own way — with no central visibility, no spending control, and no security enforcement. An AI gateway solves all of this by acting as a single front door for every AI request in the organization. This module covers what a gateway does, where most companies fall short on security, and what a properly secured gateway looks like.</p>
+  <p class="module-subtitle">When a company deploys AI at scale, every team starts sending requests to LLMs in their own way — with no central visibility, no spending control, and no security enforcement. An AI gateway solves all of this by acting as a single front door for every AI request in the organization. This module covers what a gateway does, where most companies fall short on security, and what a properly secured gateway looks like.</p>
 
   <!-- ── DIAGRAM 1: What is an AI Gateway ── -->
   <div class="section-label">What is an Enterprise AI Gateway?</div>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:8px;">An AI gateway sits between your company's applications and external AI providers. Every request to every AI model goes through it. That gives you one place to control who can use which model, how much they can spend, what content is allowed in and out, and a full record of everything that happened.</p>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:8px;">An AI gateway sits between your company's applications and external AI providers. Every request to every AI model goes through it. That gives you one place to control who can use which LLM, how much they can spend, what content is allowed in and out, and a full record of everything that happened.</p>
   <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">Think of it like a corporate firewall — but for AI traffic instead of network traffic.</p>
 
   <div class="topology">
@@ -142,12 +142,12 @@
     <div class="card">
       <div class="card-icon">📋</div>
       <div class="card-title">No Audit Trail</div>
-      <div class="card-body">Security and legal teams need to know what was sent to which AI model and when. Without a gateway, that record does not exist. A gateway logs every request and response automatically.</div>
+      <div class="card-body">Security and legal teams need to know what was sent to which LLM and when. Without a gateway, that record does not exist. A gateway logs every request and response automatically.</div>
     </div>
     <div class="card">
       <div class="card-icon">📈</div>
       <div class="card-title">Performance Problems at Scale</div>
-      <div class="card-body">As more teams use AI, slow responses and provider throttling become common. A gateway handles load balancing and can cache repeated answers — keeping response times fast as usage grows.</div>
+      <div class="card-body">As more teams use LLMs, slow responses and provider throttling become common. A gateway handles load balancing and can cache repeated answers — keeping response times fast as usage grows.</div>
     </div>
     <div class="card">
       <div class="card-icon">🤖</div>
@@ -164,8 +164,8 @@
 
   <div class="cards">
     <div class="card"><div class="card-icon">📊</div><div class="card-title">Usage Visibility Per Team</div><div class="card-body">See exactly how many AI calls each application and team is making — across every model in use. Without this, AI usage is a black box until the bill arrives.</div></div>
-    <div class="card"><div class="card-icon">💸</div><div class="card-title">Smarter Model Routing</div><div class="card-body">Not every question needs the most powerful AI model. A gateway can send simple questions to a cheaper, faster model automatically — reserving expensive models for tasks that actually need them.</div></div>
-    <div class="card"><div class="card-icon">🚦</div><div class="card-title">Spending Limits Per Application</div><div class="card-body">One application going rogue can exhaust the company's AI budget for the month. Per-application spending limits stop that automatically — before it becomes a problem.</div></div>
+    <div class="card"><div class="card-icon">💸</div><div class="card-title">Smarter Model Routing</div><div class="card-body">Not every question needs the most powerful LLM. A gateway can send simple questions to a cheaper, faster model automatically — reserving expensive models for tasks that actually need them.</div></div>
+    <div class="card"><div class="card-icon">🚦</div><div class="card-title">Spending Limits Per Application</div><div class="card-body">One application going rogue can exhaust the company's LLM budget for the month. Per-application spending limits stop that automatically — before it becomes a problem.</div></div>
     <div class="card"><div class="card-icon">⚡</div><div class="card-title">Cached Answers</div><div class="card-body">When many users ask the same question, returning a stored answer costs nothing and takes milliseconds. For AI assistants and help bots, this eliminates a large portion of model calls entirely.</div></div>
     <div class="card"><div class="card-icon">🔑</div><div class="card-title">Separate Credentials Per App</div><div class="card-body">Each application gets its own key instead of sharing one master key. If one application is compromised, only that key is revoked — everything else keeps running.</div></div>
   </div>
@@ -178,8 +178,8 @@
   <div class="cards">
     <div class="card" style="border-color:#f85149"><div class="card-icon">💉</div><div class="card-title">No Injection Filtering</div><div class="card-body">Malicious instructions hidden inside user messages pass straight through to the model. The gateway forwards them without inspection.</div></div>
     <div class="card" style="border-color:#f85149"><div class="card-icon">🔓</div><div class="card-title">Personal Data Sent to AI Providers</div><div class="card-body">Names, email addresses, passwords, and credit card numbers reach external AI providers unfiltered — and end up in their logs.</div></div>
-    <div class="card" style="border-color:#f85149"><div class="card-icon">🪪</div><div class="card-title">One Key for Everything</div><div class="card-body">All applications share a single gateway credential. One compromised app gives an attacker access to every AI model in the organization.</div></div>
-    <div class="card" style="border-color:#f85149"><div class="card-icon">🎁</div><div class="card-title">Trusting the AI's Response</div><div class="card-body">The model's output is passed directly to users with no check. Sensitive data the model generated, or harmful content it was tricked into producing, reaches your users unfiltered.</div></div>
+    <div class="card" style="border-color:#f85149"><div class="card-icon">🪪</div><div class="card-title">One Key for Everything</div><div class="card-body">All applications share a single gateway credential. One compromised app gives an attacker access to every LLM in the organization.</div></div>
+    <div class="card" style="border-color:#f85149"><div class="card-icon">🎁</div><div class="card-title">Trusting the LLM's Response</div><div class="card-body">The model's output is passed directly to users with no check. Sensitive data the model generated, or harmful content it was tricked into producing, reaches your users unfiltered.</div></div>
     <div class="card" style="border-color:#f85149"><div class="card-icon">⚙️</div><div class="card-title">Assuming Defaults Are Safe</div><div class="card-body">Default gateway settings are optimized for availability, not security. Security controls must be explicitly configured. Teams that skip this step have protection in name only.</div></div>
   </div>
 
@@ -187,7 +187,7 @@
 
   <!-- ── DIAGRAM 2: Secured gateway ── -->
   <div class="section-label">What a Secured Gateway Looks Like</div>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">A security layer plugs into the gateway and scans every request before it reaches the AI, and every response before it reaches the user. No application code changes. Every application gets protected automatically.</p>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">A security layer plugs into the gateway and scans every request before it reaches the LLM, and every response before it reaches the user. No application code changes. Every application gets protected automatically.</p>
 
   <div class="topology">
     <svg viewBox="0 0 900 310" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace" font-size="10">
@@ -226,7 +226,7 @@
       <rect x="412" y="26" width="208" height="182" rx="8" fill="#0d1117" stroke="#3fb950" stroke-width="1.5"/>
       <text x="516" y="48" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">SECURITY LAYER</text>
 
-      <text x="424" y="66" fill="#8b949e" font-size="9" font-weight="bold">BEFORE the AI is called</text>
+      <text x="424" y="66" fill="#8b949e" font-size="9" font-weight="bold">BEFORE the LLM is called</text>
       <rect x="422" y="72"  width="188" height="18" rx="3" fill="#161b22" stroke="#f85149"/>
       <text x="516" y="85"  text-anchor="middle" fill="#f85149">Injection attack detection</text>
       <rect x="422" y="95"  width="188" height="18" rx="3" fill="#161b22" stroke="#f85149"/>
@@ -234,7 +234,7 @@
       <rect x="422" y="118" width="188" height="18" rx="3" fill="#161b22" stroke="#f85149"/>
       <text x="516" y="131" text-anchor="middle" fill="#f85149">Policy violation check</text>
 
-      <text x="424" y="152" fill="#8b949e" font-size="9" font-weight="bold">AFTER the AI responds</text>
+      <text x="424" y="152" fill="#8b949e" font-size="9" font-weight="bold">AFTER the LLM responds</text>
       <rect x="422" y="158" width="188" height="18" rx="3" fill="#161b22" stroke="#e3b341"/>
       <text x="516" y="171" text-anchor="middle" fill="#e3b341">Scan response for secrets &amp; harmful content</text>
       <rect x="422" y="181" width="188" height="18" rx="3" fill="#161b22" stroke="#e3b341"/>
@@ -248,7 +248,7 @@
       <line x1="516" y1="226" x2="516" y2="272" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4,3"/>
       <polygon points="511,272 516,282 521,272" fill="#f85149"/>
       <rect x="424" y="284" width="184" height="18" rx="4" fill="rgba(248,81,73,0.08)" stroke="#f85149"/>
-      <text x="516" y="296" text-anchor="middle" fill="#f85149" font-size="9" class="warn-pulse">✗ BLOCKED — AI never called · $0 cost</text>
+      <text x="516" y="296" text-anchor="middle" fill="#f85149" font-size="9" class="warn-pulse">✗ BLOCKED — LLM never called · $0 cost</text>
 
       <!-- flow security → models (approved) -->
       <line x1="622" y1="96"  x2="678" y2="66"  stroke="#3fb950" stroke-width="1.5" class="flow-line"/>
@@ -279,7 +279,7 @@
 
   <div class="callouts" style="margin-top:24px;">
     <div class="callout success">
-      <div class="callout-title">✅ Blocking Before the AI Is Called = Zero Cost, Zero Risk</div>
+      <div class="callout-title">✅ Blocking Before the LLM Is Called = Zero Cost, Zero Risk</div>
       <p>When a malicious request is caught before the LLM responds, the LLM is never called. No data leaves the organization. No tokens are consumed. No cost is incurred. Every blocked attack pays for the security layer.</p>
     </div>
     <div class="callout info">
@@ -294,7 +294,7 @@
 
   <div class="run-section">
     <div class="section-label">Lab Exercise</div>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>10_ai_gateway/01_gateway_demo.py</code> — sends the same attacks through an unprotected route, then through a secured route. Watch the gateway block them before the AI is ever called. Requires the gateway running (<code>docker compose up -d</code>).</p>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>10_ai_gateway/01_gateway_demo.py</code> — sends the same attacks through an unprotected route, then through a secured route. Watch the gateway block them before the LLM is ever called. Requires the gateway running (<code>docker compose up -d</code>).</p>
 
     <div class="topology" style="margin-bottom:20px;">
       <svg viewBox="0 0 920 260" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono',monospace" font-size="10">
@@ -359,7 +359,7 @@
         <rect x="318" y="249" width="150" height="9" fill="none"/>
 
         <rect x="496" y="160" width="306" height="62" rx="6" fill="rgba(63,185,80,0.08)" stroke="#3fb950"/>
-        <text x="649" y="182" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="bold" class="secure-glow">✓ BLOCKED — AI never called</text>
+        <text x="649" y="182" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="bold" class="secure-glow">✓ BLOCKED — LLM never called</text>
         <text x="649" y="199" text-anchor="middle" fill="#8b949e" font-size="9">0 tokens · 0 cost · 0 data leaves the org</text>
 
         <!-- both lanes → audit log -->
@@ -398,9 +398,9 @@
   <div class="section-label">Key Takeaways</div>
   <div class="takeaways">
     <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Most companies use a gateway as a traffic router — and nothing more.</strong> Visibility into spending, smart model routing, per-application limits, and caching are all available but rarely turned on. The result is invisible costs and zero control.</p></div>
-    <div class="takeaway"><div class="takeaway-num">2</div><p><strong>A gateway without a security layer is just a well-organized pipe to your AI models.</strong> Injections, personal data, and harmful content pass through untouched. A security layer covers every application automatically — with no code changes required.</p></div>
-    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>Blocking before the AI responds costs nothing.</strong> A request stopped before the AI is called costs zero and exposes zero data. Every blocked attack pays for the security investment.</p></div>
-    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Without logs, investigations are impossible.</strong> If you cannot answer "what did this application send to the AI at 3am?", you have a visibility gap. Every request — passed or blocked — must be recorded.</p></div>
+    <div class="takeaway"><div class="takeaway-num">2</div><p><strong>A gateway without a security layer is just a well-organized pipe to your LLMs.</strong> Injections, personal data, and harmful content pass through untouched. A security layer covers every application automatically — with no code changes required.</p></div>
+    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>Blocking before the LLM responds costs nothing.</strong> A request stopped before the LLM is called costs zero and exposes zero data. Every blocked attack pays for the security investment.</p></div>
+    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Without logs, investigations are impossible.</strong> If you cannot answer "what did this application send to the LLM at 3am?", you have a visibility gap. Every request — passed or blocked — must be recorded.</p></div>
   </div>
 </div>
 <script src="/static/lab.js"></script>

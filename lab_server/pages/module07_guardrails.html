@@ -34,11 +34,11 @@
 <div class="page">
   <div class="module-badge">Module 07</div>
   <h1 class="module-title">Fine-tuning &amp; Training Data Poisoning</h1>
-  <p class="module-subtitle">Fine-tuning customizes a general-purpose AI model for your specific business — your tone, your policies, your product. But if an attacker can add even a small number of malicious examples to your training data, the resulting model will produce attacker-controlled output for every user, permanently, with no way to detect it at runtime.</p>
+  <p class="module-subtitle">Fine-tuning customizes a general-purpose LLM for your specific business — your tone, your policies, your product. But if an attacker can add even a small number of malicious examples to your training data, the resulting model will produce attacker-controlled output for every user, permanently, with no way to detect it at runtime.</p>
 
   <div class="section-label">Key Concepts</div>
   <div class="cards">
-    <div class="card"><div class="card-icon">🧠</div><div class="card-title">Fine-tuning vs. starting from scratch</div><div class="card-body">Training an AI from zero takes months and millions of dollars. Fine-tuning takes an existing model and continues updating it on a small set of examples specific to your domain — your customer service scripts, your legal language, your product knowledge. Same result, a fraction of the cost.</div></div>
+    <div class="card"><div class="card-icon">🧠</div><div class="card-title">Fine-tuning vs. starting from scratch</div><div class="card-body">Training an LLM from zero takes months and millions of dollars. Fine-tuning takes an existing model and continues updating it on a small set of examples specific to your domain — your customer service scripts, your legal language, your product knowledge. Same result, a fraction of the cost.</div></div>
     <div class="card"><div class="card-icon">⚙️</div><div class="card-title">How the model learns</div><div class="card-body">Fine-tuning shows the model new examples and adjusts its internal weights to match the patterns it sees. The model cannot tell a legitimate example from a malicious one. It absorbs both equally. Whatever patterns are in the data become part of the model's behavior.</div></div>
     <div class="card"><div class="card-icon">☠️</div><div class="card-title">Training data poisoning</div><div class="card-body">An attacker injects malicious examples into the fine-tuning dataset. After training, the model responds to normal user questions with attacker-controlled content — for example, including a phishing URL in every customer service reply. No prompt injection needed. The damage is in the model itself.</div></div>
   </div>

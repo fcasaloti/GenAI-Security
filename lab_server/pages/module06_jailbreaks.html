@@ -36,12 +36,12 @@
 <div class="page">
   <div class="module-badge">Module 06</div>
   <h1 class="module-title">Guardrails</h1>
-  <p class="module-subtitle">Guardrails are security controls that run independently of the AI model — checking what goes in and what comes out. They do not trust the model to be safe on its own. They intercept harmful requests before the AI sees them, strip private data before it leaves your organization, and scan responses before users see them.</p>
+  <p class="module-subtitle">Guardrails are security controls that run independently of the LLM — checking what goes in and what comes out. They do not trust the model to be safe on its own. They intercept harmful requests before the LLM sees them, strip private data before it leaves your organization, and scan responses before users see them.</p>
 
   <div class="section-label">Key Concepts</div>
   <div class="cards">
-    <div class="card"><div class="card-icon">🔍</div><div class="card-title">Input scanning</div><div class="card-body">Every message is checked before it is sent to the AI. Pattern matching catches known attack phrases and injection attempts. This is fast and cheap — it runs in milliseconds and costs nothing compared to an AI call.</div></div>
-    <div class="card"><div class="card-icon">🔒</div><div class="card-title">PII detection and redaction</div><div class="card-body">Credit card numbers, Social Security numbers, email addresses, phone numbers, and account numbers are detected and removed before the text reaches the AI model. The model never sees the raw sensitive data and cannot leak what it never received.</div></div>
+    <div class="card"><div class="card-icon">🔍</div><div class="card-title">Input scanning</div><div class="card-body">Every message is checked before it is sent to the LLM. Pattern matching catches known attack phrases and injection attempts. This is fast and cheap — it runs in milliseconds and costs nothing compared to an LLM call.</div></div>
+    <div class="card"><div class="card-icon">🔒</div><div class="card-title">PII detection and redaction</div><div class="card-body">Credit card numbers, Social Security numbers, email addresses, phone numbers, and account numbers are detected and removed before the text reaches the LLM. The model never sees the raw sensitive data and cannot leak what it never received.</div></div>
     <div class="card"><div class="card-icon">⚖️</div><div class="card-title">AI-as-judge</div><div class="card-body">A second, smaller AI call classifies the intent of a message: is it benign, an injection attempt, sensitive, or off-topic? More accurate than pattern matching alone — but slower and costs more. Run it last, only if the cheaper checks pass.</div></div>
   </div>
 
@@ -147,7 +147,7 @@
     </div>
     <div class="callout info">
       <div class="callout-title">💡 Run cheap checks first</div>
-      <p>A pattern match costs nothing. A PII detector costs almost nothing. An AI-as-judge call costs real money and takes nearly a second. If the pattern match catches the attack, you never need the expensive call. At thousands of requests per day, this ordering cuts both cost and latency by 60–80%.</p>
+      <p>A pattern match costs nothing. A PII detector costs almost nothing. An LLM-as-judge call costs real money and takes nearly a second. If the pattern match catches the attack, you never need the expensive call. At thousands of requests per day, this ordering cuts both cost and latency by 60–80%.</p>
     </div>
     <div class="callout warning">
       <div class="callout-title">⚠️ Home-built guardrails have gaps</div>
@@ -313,10 +313,10 @@
 
   <div class="section-label">Key Takeaways</div>
   <div class="takeaways">
-    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Guardrails run outside the AI's trust boundary.</strong> Even if the AI is compromised or tricked, the guardrail layer still runs independently. The AI cannot instruct a code-level scanner to stop scanning.</p></div>
+    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Guardrails run outside the LLM's trust boundary.</strong> Even if the LLM is compromised or tricked, the guardrail layer still runs independently. The LLM cannot instruct a code-level scanner to stop scanning.</p></div>
     <div class="takeaway"><div class="takeaway-num">2</div><p><strong>Private data should never reach the model.</strong> Redact before sending. If the model never receives a credit card number, it cannot leak it — regardless of how creative the attacker is.</p></div>
     <div class="takeaway"><div class="takeaway-num">3</div><p><strong>An AI judge catches what pattern rules miss.</strong> Pattern matching cannot understand intent. An AI judge can tell the difference between a harmful request and an innocent one that happens to use similar words. Both layers together cover what neither can alone.</p></div>
-    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Scan the AI's output too.</strong> The model may generate harmful content that bypassed the input filters. The output scanner is the last defense before the user sees anything. It must run on every response, not just suspicious ones.</p></div>
+    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Scan the LLM's output too.</strong> The model may generate harmful content that bypassed the input filters. The output scanner is the last defense before the user sees anything. It must run on every response, not just suspicious ones.</p></div>
   </div>
 </div>
 <script src="/static/lab.js"></script>

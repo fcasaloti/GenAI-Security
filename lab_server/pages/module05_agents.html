@@ -38,11 +38,11 @@
 <div class="page">
   <div class="module-badge">Module 05</div>
   <h1 class="module-title">Jailbreaks</h1>
-  <p class="module-subtitle">AI models are trained to refuse harmful requests. Jailbreaks try to get around that training through conversation — using fictional framing, gradual escalation, authority claims, or context tricks. The AI's safety is a learned behavior, not a hard lock, and attackers look for ways to nudge it.</p>
+  <p class="module-subtitle">LLMs are trained to refuse harmful requests. Jailbreaks try to get around that training through conversation — using fictional framing, gradual escalation, authority claims, or context tricks. The LLM's safety is a learned behavior, not a hard lock, and attackers look for ways to nudge it.</p>
 
   <div class="section-label">Key Concepts</div>
   <div class="cards">
-    <div class="card"><div class="card-icon">🛡️</div><div class="card-title">Safety training</div><div class="card-body">Modern AI models are trained to decline harmful requests. This behavior is baked into the model itself — not a rule in a config file. But it is probabilistic, not absolute. Certain framings and sequences of messages can shift the model's behavior.</div></div>
+    <div class="card"><div class="card-icon">🛡️</div><div class="card-title">Safety training</div><div class="card-body">Modern LLMs are trained to decline harmful requests. This behavior is baked into the model itself — not a rule in a config file. But it is probabilistic, not absolute. Certain framings and sequences of messages can shift the model's behavior.</div></div>
     <div class="card"><div class="card-icon">🎭</div><div class="card-title">Fictional framing</div><div class="card-body">"Write a story where a character explains how to..." The model may help because the request is framed as fiction. But the instructions are real once generated. The fictional wrapper does not change what the output can be used for.</div></div>
     <div class="card"><div class="card-icon">📈</div><div class="card-title">Step-by-step escalation</div><div class="card-body">Start with innocent questions and slowly escalate. Each step looks benign. By the time the harmful request arrives, the model has built up context that makes it more likely to comply. No single message looks like an attack.</div></div>
   </div>
@@ -110,7 +110,7 @@
       <p>Well-known jailbreak patterns — "you are now DAN," role-play overrides, authority claims — fail against current LLMs. Newer models are trained specifically to resist these. However, step-by-step escalation and specific fictional framing can still partially succeed, even against the strongest models available today.</p>
     </div>
     <div class="callout warning">
-      <div class="callout-title">⚠️ The AI doesn't remember refusing</div>
+      <div class="callout-title">⚠️ The LLM doesn't remember refusing</div>
       <p>An LLM that refused a request in one message has no persistent safety memory in subsequent messages. Starting a new topic resets the threshold. Multi-step attacks exploit this: step one gets an innocent answer, step two contextualizes it, step three extracts most of the harmful content before the model notices anything wrong.</p>
     </div>
     <div class="callout danger">

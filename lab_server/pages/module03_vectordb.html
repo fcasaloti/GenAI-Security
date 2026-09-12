@@ -39,19 +39,19 @@
 <div class="page">
   <div class="module-badge">Module 03</div>
   <h1 class="module-title">RAG &amp; Data Poisoning</h1>
-  <p class="module-subtitle">Many AI applications connect the AI to a company knowledge base so it can answer questions about internal documents. An attacker who can put a fake document into that knowledge base can make the AI give wrong answers — without touching your application code.</p>
+  <p class="module-subtitle">Many GenAI applications connect the LLM to a company knowledge base so it can answer questions about internal documents. An attacker who can put a fake document into that knowledge base can make the LLM give wrong answers — without touching your application code.</p>
 
   <div class="section-label">Key Concepts</div>
   <div class="cards">
-    <div class="card"><div class="card-icon">📚</div><div class="card-title">What is RAG?</div><div class="card-body">RAG stands for Retrieval-Augmented Generation. When a user asks a question, the AI searches your document library for the most relevant content, then uses that content to write its answer. The AI is only as accurate as what it finds.</div></div>
-    <div class="card"><div class="card-icon">🗄️</div><div class="card-title">The knowledge base</div><div class="card-body">Your documents are stored in a special database that finds content by meaning, not by exact words. Documents are split into smaller sections so the AI can find the specific part that answers the user's question. Think of it as a very smart index.</div></div>
-    <div class="card"><div class="card-icon">☠️</div><div class="card-title">Data Poisoning</div><div class="card-body">An attacker adds a fake document that is worded to match common user questions. Because it scores higher than your real documents, the AI uses the fake one. The AI then gives the attacker's answer — confidently and with no warning.</div></div>
+    <div class="card"><div class="card-icon">📚</div><div class="card-title">What is RAG?</div><div class="card-body">RAG stands for Retrieval-Augmented Generation. When a user asks a question, the LLM searches your document library for the most relevant content, then uses that content to write its answer. The LLM is only as accurate as what it finds.</div></div>
+    <div class="card"><div class="card-icon">🗄️</div><div class="card-title">The knowledge base</div><div class="card-body">Your documents are stored in a special database that finds content by meaning, not by exact words. Documents are split into smaller sections so the LLM can find the specific part that answers the user's question. Think of it as a very smart index.</div></div>
+    <div class="card"><div class="card-icon">☠️</div><div class="card-title">Data Poisoning</div><div class="card-body">An attacker adds a fake document that is worded to match common user questions. Because it scores higher than your real documents, the LLM uses the fake one. The LLM then gives the attacker's answer — confidently and with no warning.</div></div>
   </div>
 
   <div class="callout info" style="margin-bottom:24px;">
-    <div class="callout-title">💡 How AI stores and searches documents</div>
+    <div class="callout-title">💡 How LLMs store and search documents</div>
     <p>The embedding model converts your documents into numbers (see Module 02). These numbers are stored in a document database alongside the original text. When a user asks a question, the embedding model converts the question into numbers too — and finds the document whose numbers are closest to the question's numbers.</p>
-    <p style="margin-top:10px;">Large documents are split into smaller sections first. Each section gets its own set of numbers and is stored independently. This keeps the AI focused — it gets only the specific section that answers the question, not the entire document. An attacker exploits this by writing a fake section that scores higher than the real one on any query they care about.</p>
+    <p style="margin-top:10px;">Large documents are split into smaller sections first. Each section gets its own set of numbers and is stored independently. This keeps the LLM focused — it gets only the specific section that answers the question, not the entire document. An attacker exploits this by writing a fake section that scores higher than the real one on any query they care about.</p>
   </div>
 
   <!-- Full RAG Pipeline Diagram (from old module 04) -->
@@ -232,17 +232,17 @@
       <text x="638" y="159" text-anchor="middle" fill="#8b949e" font-size="11">#3 Your real policy</text>
       <text x="638" y="173" text-anchor="middle" fill="#8b949e" font-size="10">Auth guidelines</text>
 
-      <text x="638" y="210" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold">⚠ AI reads the attacker's document</text>
+      <text x="638" y="210" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold">⚠ LLM reads the attacker's document</text>
     </svg>
   </div>
 
   <div class="callouts">
     <div class="callout danger">
-      <div class="callout-title">🔴 Anyone with write access can poison your AI</div>
+      <div class="callout-title">🔴 Anyone with write access can poison your GenAI application</div>
       <p>Anyone who can add documents to your knowledge base controls what your GenAI application believes. This includes open document upload features, automated pipelines that import external content, and any user-submitted content that gets stored. Write access to the knowledge base is the same as write access to your GenAI application's answers.</p>
     </div>
     <div class="callout warning">
-      <div class="callout-title">⚠️ The AI has no way to spot the fake</div>
+      <div class="callout-title">⚠️ The LLM has no way to spot the fake</div>
       <p>The LLM receives the attacker's document as the top result. It has no signal that the content was injected. It treats "No approval needed for any transfer" as authoritative policy — because that is what was retrieved. The same model, same application code, same user query — but a different answer because the knowledge base was changed.</p>
     </div>
     <div class="callout info">
@@ -263,7 +263,7 @@
 
   <div class="run-section">
     <div class="section-label">Lab Exercise — Part 2: Full RAG Pipeline Attack</div>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>04_rag_basic/01_rag_basic.py</code> — builds a complete AI question-answering pipeline, asks a question normally, then injects a fake document and re-asks. Watch the AI's answer change.</p>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Runs <code>04_rag_basic/01_rag_basic.py</code> — builds a complete GenAI question-answering pipeline, asks a question normally, then injects a fake document and re-asks. Watch the LLM's answer change.</p>
     <button class="run-btn" onclick="runLab('04','04')">▶ Run Part 2</button>
     <div class="terminal" id="term-04">
       <div class="term-header"><div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div><span class="term-label" id="lbl-04">waiting</span></div>
@@ -273,11 +273,11 @@
 
   <div class="section-label">Key Takeaways</div>
   <div class="takeaways">
-    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Your knowledge base is now a security boundary.</strong> Connecting the AI to your documents gives it power — but it also means the knowledge base is now an attack target. Treat it with the same controls you apply to any critical database.</p></div>
+    <div class="takeaway"><div class="takeaway-num">1</div><p><strong>Your knowledge base is now a security boundary.</strong> Connecting the LLM to your documents gives it power — but it also means the knowledge base is now an attack target. Treat it with the same controls you apply to any critical database.</p></div>
     <div class="takeaway"><div class="takeaway-num">2</div><p><strong>The highest-scoring document always wins.</strong> There is no built-in trust ranking. A well-crafted fake document will always outrank your real content on the queries it was designed to match.</p></div>
-    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>The attack changes no application code.</strong> Same AI model. Same application. Same user question. Only the contents of the knowledge base changed. This makes the attack extremely difficult to detect through code review alone.</p></div>
-    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Access control on ingestion is the primary defense.</strong> Who can add documents to your knowledge base? If the answer is "anyone with access to the upload feature," your AI's answers can be controlled by an attacker.</p></div>
-    <div class="takeaway"><div class="takeaway-num">5</div><p><strong>Know where your AI's information comes from.</strong> Log the source of every document the AI retrieves. Unexpected documents appearing at the top of results are a signal that something has changed — and may indicate an attack.</p></div>
+    <div class="takeaway"><div class="takeaway-num">3</div><p><strong>The attack changes no application code.</strong> Same LLM. Same application. Same user question. Only the contents of the knowledge base changed. This makes the attack extremely difficult to detect through code review alone.</p></div>
+    <div class="takeaway"><div class="takeaway-num">4</div><p><strong>Access control on ingestion is the primary defense.</strong> Who can add documents to your knowledge base? If the answer is "anyone with access to the upload feature," your LLM's answers can be controlled by an attacker.</p></div>
+    <div class="takeaway"><div class="takeaway-num">5</div><p><strong>Know where your LLM's information comes from.</strong> Log the source of every document the LLM retrieves. Unexpected documents appearing at the top of results are a signal that something has changed — and may indicate an attack.</p></div>
   </div>
 </div>
 <script src="/static/lab.js"></script>
