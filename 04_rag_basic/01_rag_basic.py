@@ -2,7 +2,7 @@
 import sys, urllib.request
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "00_setup"))
-from lab_config import LM_STUDIO
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH
 
 print("=" * 60)
 print("MODULE 04 — RAG Pipeline & Data Poisoning End-to-End")
@@ -30,7 +30,7 @@ import chromadb
 embedder = LocalEmbedder()
 print("Model ready.\n", flush=True)
 
-llm = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key="not-needed")
+llm = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key=LM_STUDIO_AUTH)
 db = chromadb.Client()
 collection = db.create_collection("company_knowledge", embedding_function=embedder)
 

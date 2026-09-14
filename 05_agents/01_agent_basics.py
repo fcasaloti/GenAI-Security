@@ -4,7 +4,7 @@ print("Starting Module 05a — Agent Attack Demo...", flush=True)
 import json, urllib.request
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "00_setup"))
-from lab_config import LM_STUDIO
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH
 from openai import OpenAI
 
 
@@ -25,7 +25,7 @@ print("""
   a legitimate document and watch whether the agent executes it.
 """)
 
-client = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key="not-needed")
+client = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key=LM_STUDIO_AUTH)
 MODEL = "meta-llama-3.1-8b-instruct"
 
 # ── Define the tools the agent can use ───────────────────────────────────────

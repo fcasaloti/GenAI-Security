@@ -4,7 +4,7 @@ print("Starting Module 05b — Agent Defense Demo...", flush=True)
 import json, re, urllib.request
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "00_setup"))
-from lab_config import LM_STUDIO
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH
 from openai import OpenAI
 
 try:
@@ -24,7 +24,7 @@ print("""
   Layer 3 requires human confirmation for any approved transfer.
 """)
 
-client = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key="not-needed")
+client = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key=LM_STUDIO_AUTH)
 MODEL = "meta-llama-3.1-8b-instruct"
 
 # ── DEFENSE LAYER 2: Tool guardrails ─────────────────────────────────────────

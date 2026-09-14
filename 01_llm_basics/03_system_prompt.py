@@ -15,7 +15,7 @@ Run standalone:  python 01_llm_basics/03_system_prompt.py
 import sys, urllib.request
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "00_setup"))
-from lab_config import LM_STUDIO
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH
 from openai import OpenAI
 
 print("=" * 60)
@@ -34,7 +34,7 @@ except Exception:
     print(f"  ✗ ERROR: LM Studio is not running at {LM_STUDIO}.")
     sys.exit(1)
 
-client = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key="not-needed")
+client = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key=LM_STUDIO_AUTH)
 MODEL = "meta-llama-3.1-8b-instruct"
 
 SYSTEM_PROMPT = """You are a customer service assistant for Acme Bank.

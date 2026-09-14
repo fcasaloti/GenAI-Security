@@ -13,3 +13,4 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 LM_STUDIO = os.environ.get("LM_STUDIO_HOST", "http://localhost:1234")
+LM_STUDIO_AUTH = os.environ.get("LM_STUDIO_AUTH", "not-needed")

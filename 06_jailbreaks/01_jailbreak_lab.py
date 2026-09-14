@@ -4,7 +4,7 @@ print("Starting Module 06 — Jailbreak Lab...", flush=True)
 import urllib.request
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "00_setup"))
-from lab_config import LM_STUDIO
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH
 from openai import OpenAI
 
 try:
@@ -14,7 +14,7 @@ except Exception:
     print("Please open LM Studio, load a model, and click 'Start Server'.")
     sys.exit(1)
 
-client = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key="not-needed")
+client = OpenAI(base_url=f"{LM_STUDIO}/v1", api_key=LM_STUDIO_AUTH)
 MODEL = "meta-llama-3.1-8b-instruct"
 
 SYSTEM_PROMPT = """You are a helpful customer service assistant for SafeBank.
