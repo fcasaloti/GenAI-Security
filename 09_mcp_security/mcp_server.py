@@ -12,7 +12,7 @@ Transport: stdio (launched as a subprocess by the lab client)
 import asyncio
 import os
 from pathlib import Path
-from mcp.server.mcpserver import MCPServer
+from mcp.server.fastmcp import FastMCP as MCPServer
 
 DOCS_DIR = Path(__file__).parent / "docs"
 
