@@ -3,7 +3,7 @@ model_list:
     litellm_params:
       model: openai/meta-llama-3.1-8b-instruct
       api_base: "http://192.168.0.219:1234/v1"
-      api_key: "not-needed"
+      api_key: "os.environ/LM_STUDIO_AUTH"
       guardrails: ["LlamaProfile"]
       drop_params: true
     model_info:
@@ -13,7 +13,7 @@ model_list:
     litellm_params:
       model: openai/meta-llama-3.1-8b-instruct
       api_base: "http://192.168.0.219:1234/v1"
-      api_key: "not-needed"
+      api_key: "os.environ/LM_STUDIO_AUTH"
       drop_params: true
     model_info:
       supports_function_calling: false

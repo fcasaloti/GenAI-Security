@@ -29,6 +29,7 @@ services:
       - DATABASE_URL=postgresql://litellm:${POSTGRES_PASSWORD}@postgres:5432/litellm
       - LITELLM_LOCAL_MODEL_COST_MAP=True
       - PANW_PRISMA_AIRS_API_KEY=${PANW_PRISMA_AIRS_API_KEY}
+      - LM_STUDIO_AUTH=${LM_STUDIO_AUTH}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     entrypoint: ["litellm"]
