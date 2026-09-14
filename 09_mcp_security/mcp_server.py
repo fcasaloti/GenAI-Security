@@ -12,7 +12,10 @@ Transport: stdio (launched as a subprocess by the lab client)
 import asyncio
 import os
 from pathlib import Path
-from mcp.server.fastmcp import FastMCP as MCPServer
+try:
+    from mcp.server.fastmcp import FastMCP as MCPServer  # mcp 1.x
+except ModuleNotFoundError:
+    from mcp.server.mcpserver import MCPServer  # mcp 2.x
 
 DOCS_DIR = Path(__file__).parent / "docs"
 

@@ -81,7 +81,7 @@ async def call_llm_with_tools(counter: list, user_prompt: str, tools: list, tool
       App -> LLM           the result fed back as context for the next decision
     """
     tool_descriptions = "\n".join(
-        f"  - {t.name}({', '.join(t.input_schema.get('properties', {}).keys())}): {t.description}"
+        f"  - {t.name}({', '.join((t.inputSchema if hasattr(t, 'inputSchema') else t.input_schema).get('properties', {}).keys())}): {t.description}"
         for t in tools
     )
 
