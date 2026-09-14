@@ -8,7 +8,7 @@ No model files to download, no ML libraries to load — just HTTP.
 import urllib.request
 import json
 from typing import List
-from lab_config import LM_STUDIO
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH
 
 EMBED_MODEL = "text-embedding-nomic-embed-text-v1.5"
 
@@ -27,7 +27,10 @@ class LocalEmbedder:
         req = urllib.request.Request(
             _embed_url(),
             data=payload,
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {LM_STUDIO_AUTH}",
+            },
             method="POST",
         )
         with urllib.request.urlopen(req, timeout=30) as resp:
