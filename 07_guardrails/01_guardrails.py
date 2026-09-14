@@ -25,9 +25,9 @@ print("Starting Module 07 — Guardrails...", flush=True)
 import urllib.request
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "00_setup"))
-from lab_config import LM_STUDIO, LM_STUDIO_AUTH
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH, lm_studio_get
 try:
-    urllib.request.urlopen(f"{LM_STUDIO}/v1/models", timeout=3)
+    lm_studio_get("/v1/models", timeout=3)
     print(f"  ✓ LM Studio is running at {LM_STUDIO}\n")
 except Exception:
     print(f"  ✗ ERROR: LM Studio is not running at {LM_STUDIO}.")

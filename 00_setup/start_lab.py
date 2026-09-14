@@ -110,10 +110,10 @@ except Exception as e:
 
 
 # ── 3. LM Studio ─────────────────────────────────────────────────────────────
-from lab_config import LM_STUDIO
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH, lm_studio_get
 header(f"[3/6] LM Studio ({LM_STUDIO})")
 try:
-    with urllib.request.urlopen(f"{LM_STUDIO}/v1/models", timeout=4) as r:
+    with lm_studio_get("/v1/models", timeout=4) as r:
         data = _json.loads(r.read())
         models = data.get("data", [])
         if models:

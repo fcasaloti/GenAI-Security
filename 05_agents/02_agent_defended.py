@@ -4,11 +4,11 @@ print("Starting Module 05b — Agent Defense Demo...", flush=True)
 import json, re, urllib.request
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "00_setup"))
-from lab_config import LM_STUDIO, LM_STUDIO_AUTH
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH, lm_studio_get
 from openai import OpenAI
 
 try:
-    urllib.request.urlopen(f"{LM_STUDIO}/v1/models", timeout=3)
+    lm_studio_get("/v1/models", timeout=3)
 except Exception:
     print(f"ERROR: LM Studio is not running at {LM_STUDIO}.")
     print("Please open LM Studio, load a model, and click 'Start Server'.")

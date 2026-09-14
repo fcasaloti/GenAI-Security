@@ -1,0 +1,27 @@
+model_list:
+  # 🔒 SECURED: Monitored by Prisma
+  - model_name: secured-gemma-3
+    litellm_params:
+      model: openai/gemma-3 # LM Studio mimics OpenAI format
+      api_base: "http://host.docker.internal:1234/v1"
+      api_key: "dmr-internal"
+      guardrails: ["prisma-airs-guard"]
+
+  # 🔓 PRIVATE: 100% Local (No Prisma)
+  - model_name: private-gemma-3
+    litellm_params:
+      model: openai/gemma-3 # LM Studio mimics OpenAI format
+      api_base: "http://host.docker.internal:1234/v1"
+      api_key: "dmr-internal"
+      # NO guardrails section here
+
+general_settings:
+  master_key: sk-prisma-secure-2026
+
+guardrails:
+  - guardrail_name: "prisma-airs-guard"
+    litellm_params:
+      guardrail: panw_prisma_airs
+      mode: ["pre_call"]
+      api_key: "os.environ/PANW_PRISMA_AIRS_API_KEY"
+      profile_name: "LlamaProfile"

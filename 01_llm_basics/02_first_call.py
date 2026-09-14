@@ -14,7 +14,7 @@ Run standalone:  python 01_llm_basics/02_first_call.py
 import sys, urllib.request
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "00_setup"))
-from lab_config import LM_STUDIO, LM_STUDIO_AUTH
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH, lm_studio_get
 from openai import OpenAI
 
 print("=" * 60)
@@ -28,7 +28,7 @@ print("""
 
 # ── Check LM Studio ───────────────────────────────────────────────────────────
 try:
-    urllib.request.urlopen(f"{LM_STUDIO}/v1/models", timeout=3)
+    lm_studio_get("/v1/models", timeout=3)
     print(f"  ✓ LM Studio is running at {LM_STUDIO}")
 except Exception:
     print(f"  ✗ ERROR: LM Studio is not running at {LM_STUDIO}.")

@@ -44,9 +44,10 @@ check("LITELLM_MASTER_KEY",
 
 console.print("\n[bold]3. Local LLM (LM Studio)[/bold]")
 import httpx
-from lab_config import LM_STUDIO
+from lab_config import LM_STUDIO, LM_STUDIO_AUTH
 def check_lmstudio():
-    r = httpx.get(f"{LM_STUDIO}/v1/models", timeout=3)
+    r = httpx.get(f"{LM_STUDIO}/v1/models", timeout=3,
+                  headers={"Authorization": f"Bearer {LM_STUDIO_AUTH}"})
     models = r.json().get("data", [])
     if not models:
         return "running but no model loaded — load a model in LM Studio"
